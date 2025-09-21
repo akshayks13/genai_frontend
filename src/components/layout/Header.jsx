@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from "next/image";
 import { 
   Menu, 
   X, 
@@ -19,7 +20,7 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: TrendingUp },
-  { name: 'Skills', href: '/skills', icon: Target },
+  { name: 'Explore', href: '/skills', icon: Target },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
   { name: 'Trends', href: '/trends', icon: TrendingUp },
 ];
@@ -29,6 +30,24 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const userMenuRef = useRef(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-grey-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -36,11 +55,15 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-              <Target className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-grey-900">CareerAI</span>
-          </Link>
+  <Image 
+    src="/logo.png"   // <-- put your logo inside /public/logo.png
+    alt="CareerAI Logo"
+    width={120}        // adjust size
+    height={120}
+    className="rounded-lg"
+  />
+</Link>
+
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
@@ -67,7 +90,7 @@ export default function Header() {
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             {/* Desktop user menu */}
-            <div className="relative hidden md:flex">
+            <div className="relative hidden md:flex" ref={userMenuRef}>
               <button
                 aria-label="Open user menu"
                 aria-expanded={userMenuOpen}
@@ -78,7 +101,7 @@ export default function Header() {
               </button>
               {/* Dropdown (renders when toggled) */}
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5" onMouseDown={(e) => e.preventDefault()}>
+                <div className="absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseDown={(e) => e.preventDefault()}>
                   <nav className="py-1">
                     <button
                       className="w-full text-left block px-4 py-2 text-sm text-grey-700 hover:bg-grey-50"
