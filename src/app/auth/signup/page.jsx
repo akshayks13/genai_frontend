@@ -138,13 +138,28 @@ export default function SignupPage() {
                         required
                       >
                         <option value="">Select your Career</option>
+                        {/* Tech options */}
                         <option value="webdev">Web Development</option>
                         <option value="appdev">App Development</option>
-                        <option value="es">Embedded Systems</option>
-                        <option value="robo">Robotics</option>
                         <option value="fullstack">Full Stack Development</option>
                         <option value="java">Java Developer</option>
                         <option value="aiml">AI/ML</option>
+                        <option value="es">Embedded Systems</option>
+                        <option value="robo">Robotics</option>
+                        {/* Non-tech / other career options */}
+                        <option value="design">Design / UX</option>
+                        <option value="product">Product Management</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="sales">Sales</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance / Accounting</option>
+                        <option value="operations">Operations / Supply Chain</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="education">Education / Teaching</option>
+                        <option value="law">Legal / Compliance</option>
+                        <option value="research">Academic / Research</option>
+                        <option value="entrepreneur">Entrepreneur / Founder</option>
+                        <option value="other">Other / I'm exploring</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
