@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: TrendingUp },
-  { name: 'Skills', href: '/skills', icon: Target },
+  { name: 'Explore', href: '/skills', icon: Target },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
   { name: 'Trends', href: '/trends', icon: TrendingUp },
 ];
@@ -29,6 +29,24 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const userMenuRef = useRef(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-grey-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -67,7 +85,7 @@ export default function Header() {
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             {/* Desktop user menu */}
-            <div className="relative hidden md:flex">
+            <div className="relative hidden md:flex" ref={userMenuRef}>
               <button
                 aria-label="Open user menu"
                 aria-expanded={userMenuOpen}
@@ -78,7 +96,7 @@ export default function Header() {
               </button>
               {/* Dropdown (renders when toggled) */}
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5" onMouseDown={(e) => e.preventDefault()}>
+                <div className="absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseDown={(e) => e.preventDefault()}>
                   <nav className="py-1">
                     <button
                       className="w-full text-left block px-4 py-2 text-sm text-grey-700 hover:bg-grey-50"
