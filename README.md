@@ -65,6 +65,16 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
 
+## 🧭 User Flow
+
+Add your user flow diagram image below.
+
+
+## 🏗 Architecture Overview
+
+Add your architecture diagram image below.
+
+
 ## Related Repositories
 
 - genai_geodata: https://github.com/akshayks13/genai_geodata
