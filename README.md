@@ -65,15 +65,15 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
 
-## � Related Repositories
+## Related Repositories
 
 - genai_geodata: https://github.com/akshayks13/genai_geodata
 - genai_career_insights: https://github.com/akshayks13/genai_career_insights
 - Gen_AI_Exchange (backend/auth): https://github.com/Raamprathap/Gen_AI_Exchange
 
-## �👥 Team
+## Team
 
-Built with ❤️ by the CareerAI team
+Built with ❤️ by the Growgle Team
 
 ---
 
