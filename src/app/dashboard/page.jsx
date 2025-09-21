@@ -114,7 +114,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-grey-900 mb-2">Welcome back, Sarah!</h1>
+          <h1 className="text-3xl font-bold text-grey-900 mb-2">Welcome back, Akshay KS!</h1>
           <p className="text-grey-600">Here's your career progress overview</p>
         </motion.div>
 

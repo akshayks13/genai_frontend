@@ -41,20 +41,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/Input';
 
 const userProfile = {
-  name: 'Sarah Chen',
-  email: 'sarah.chen@example.com',
-  phone: '+1 (555) 123-4567',
-  location: 'San Francisco, CA',
+  name: 'Akshay KS',
+  email: 'akshayks1005@gmail.com',
+  phone: '+7530001011',
+  location: 'Coimbatore, Tamil Nadu, India',
   title: 'Frontend Developer',
   company: 'TechCorp Inc.',
   bio: 'Passionate frontend developer with 3+ years of experience building scalable web applications. Love working with React, TypeScript, and modern CSS frameworks.',
   education: [
     {
       id: 1,
-      school: 'University of California, Berkeley',
+      school: 'Amrita Vishwa Vidyapeetham',
       degree: 'Bachelor of Science in Computer Science',
       year: '2019-2023',
-      gpa: '3.8'
+      gpa: '8.5/10'
     }
   ],
   experience: [
@@ -84,10 +84,10 @@ const userProfile = {
     { name: 'Git', level: 85, category: 'Tools' }
   ],
   social: {
-    website: 'https://sarahchen.dev',
-    github: 'https://github.com/sarahchen',
-    linkedin: 'https://linkedin.com/in/sarahchen',
-    twitter: 'https://twitter.com/sarahchen'
+    website: 'https://akshayks.dev',
+    github: 'https://github.com/akshayks13',
+    linkedin: 'https://linkedin.com/in/akshayks',
+    twitter: 'https://twitter.com/akshayks'
   },
   preferences: {
     emailNotifications: true,
@@ -101,7 +101,7 @@ const userProfile = {
 const resumeData = {
   score: 85,
   lastUpdated: '2024-01-15',
-  fileName: 'Sarah_Chen_Resume.pdf',
+  fileName: 'akshayks_Resume.pdf',
   suggestions: [
     {
       type: 'improvement',
