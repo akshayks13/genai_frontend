@@ -1,6 +1,8 @@
 # Growgle - AI-Powered Career Advisor
 
-A modern, Google-inspired web application that empowers students and professionals with AI-driven career guidance, personalized skill mapping, and intelligent career roadmaps.
+Introducing Growgle, India’s first personalised, all-in-one, pan-industrial career platform, powered by Google’s latest AI models, Cloud features, and personalised real-time career feeds. Its 4.7 million token premium-quality RAG vector database—the first, largest and most diverse of its kind in India—builds a solid yet unique foundation that analyses the volatility of career stability due to under-explored realms like business psychology, administrative-policy framework updates, economic changes and international politics.
+
+Our engines are powered with premium-quality domestic and international data, retrieved from renowned Indian and international research organizations, MNC growth statistics, business outlook reports, government agencies and ministries, statistics from Google Data Commons, administrative annual reports, and think-tank research publications. From keeping users ahead with the latest job opportunities and region-based work culture insights, to designing customised, multi-dimensional career growth plans, Growgle is the common path for Google and India towards realising Viksit Bharat by 2047.
 
 ## 🚀 Features
 
