@@ -25,27 +25,36 @@ import {
   Plus,
   Award,
   Target,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  Download,
+  Upload,
+  Sparkles,
+  Star,
+  AlertCircle,
+  CheckCircle,
+  Eye,
+  Wand2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 
 const userProfile = {
-  name: 'Sarah Chen',
-  email: 'sarah.chen@example.com',
-  phone: '+1 (555) 123-4567',
-  location: 'San Francisco, CA',
+  name: 'Akshay KS',
+  email: 'akshayks1005@gmail.com',
+  phone: '+7530001011',
+  location: 'Coimbatore, Tamil Nadu, India',
   title: 'Frontend Developer',
   company: 'TechCorp Inc.',
   bio: 'Passionate frontend developer with 3+ years of experience building scalable web applications. Love working with React, TypeScript, and modern CSS frameworks.',
   education: [
     {
       id: 1,
-      school: 'University of California, Berkeley',
+      school: 'Amrita Vishwa Vidyapeetham',
       degree: 'Bachelor of Science in Computer Science',
       year: '2019-2023',
-      gpa: '3.8'
+      gpa: '8.5/10'
     }
   ],
   experience: [
@@ -75,10 +84,10 @@ const userProfile = {
     { name: 'Git', level: 85, category: 'Tools' }
   ],
   social: {
-    website: 'https://sarahchen.dev',
-    github: 'https://github.com/sarahchen',
-    linkedin: 'https://linkedin.com/in/sarahchen',
-    twitter: 'https://twitter.com/sarahchen'
+    website: 'https://akshayks.dev',
+    github: 'https://github.com/akshayks13',
+    linkedin: 'https://linkedin.com/in/akshayks',
+    twitter: 'https://twitter.com/akshayks'
   },
   preferences: {
     emailNotifications: true,
@@ -89,13 +98,52 @@ const userProfile = {
   }
 };
 
+const resumeData = {
+  score: 85,
+  lastUpdated: '2024-01-15',
+  fileName: 'akshayks_Resume.pdf',
+  suggestions: [
+    {
+      type: 'improvement',
+      title: 'Add quantifiable achievements',
+      description: 'Include specific metrics and numbers to showcase your impact',
+      priority: 'high'
+    },
+    {
+      type: 'missing',
+      title: 'Add certifications section',
+      description: 'Showcase your professional certifications and courses',
+      priority: 'medium'
+    },
+    {
+      type: 'enhancement',
+      title: 'Optimize keywords',
+      description: 'Include more industry-relevant keywords for ATS compatibility',
+      priority: 'medium'
+    },
+    {
+      type: 'formatting',
+      title: 'Improve visual hierarchy',
+      description: 'Use better spacing and typography to enhance readability',
+      priority: 'low'
+    }
+  ],
+  analysis: {
+    strengths: ['Strong technical skills', 'Clear experience progression', 'Good education background'],
+    weaknesses: ['Missing quantifiable achievements', 'No certifications listed', 'Could use more keywords']
+  }
+};
+
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(userProfile);
+  const [showResumePreview, setShowResumePreview] = useState(false);
+  const [isProcessingResume, setIsProcessingResume] = useState(false);
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
+    { id: 'resume', label: 'Resume', icon: FileText },
     { id: 'skills', label: 'Skills & Experience', icon: Target },
     { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'privacy', label: 'Privacy & Security', icon: Shield }
@@ -141,15 +189,116 @@ export default function ProfilePage() {
     });
   };
 
+  const handleUploadResume = () => {
+    setIsProcessingResume(true);
+    // Simulate file upload and processing
+    setTimeout(() => {
+      setIsProcessingResume(false);
+      alert('Resume uploaded and analyzed successfully!');
+    }, 2000);
+  };
+
+  const handleGenerateResume = () => {
+    setIsProcessingResume(true);
+    // Simulate AI resume generation
+    setTimeout(() => {
+      setIsProcessingResume(false);
+      alert('AI-generated resume created successfully!');
+    }, 3000);
+  };
+
+  const handleEnhanceResume = () => {
+    setIsProcessingResume(true);
+    // Simulate AI enhancement
+    setTimeout(() => {
+      setIsProcessingResume(false);
+      alert('Resume enhanced with AI suggestions!');
+    }, 2500);
+  };
+
+  const ScoreCircle = ({ score }) => {
+    const circumference = 2 * Math.PI * 40;
+    const strokeDasharray = `${(score / 100) * circumference} ${circumference}`;
+    
+    return (
+      <div className="relative w-24 h-24">
+        <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            stroke="currentColor"
+            strokeWidth="8"
+            fill="transparent"
+            className="text-gray-200"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            stroke="currentColor"
+            strokeWidth="8"
+            fill="transparent"
+            strokeDasharray={strokeDasharray}
+            className={`${score >= 80 ? 'text-green-500' : score >= 60 ? 'text-yellow-500' : 'text-red-500'}`}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-xl font-bold text-gray-700">{score}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const SuggestionCard = ({ suggestion }) => {
+    const getIcon = (type) => {
+      switch(type) {
+        case 'improvement': return <TrendingUp className="h-4 w-4" />;
+        case 'missing': return <AlertCircle className="h-4 w-4" />;
+        case 'enhancement': return <Sparkles className="h-4 w-4" />;
+        case 'formatting': return <Eye className="h-4 w-4" />;
+        default: return <CheckCircle className="h-4 w-4" />;
+      }
+    };
+
+    const getPriorityColor = (priority) => {
+      switch(priority) {
+        case 'high': return 'text-red-600 bg-red-100';
+        case 'medium': return 'text-yellow-600 bg-yellow-100';
+        case 'low': return 'text-green-600 bg-green-100';
+        default: return 'text-gray-600 bg-gray-100';
+      }
+    };
+
+    return (
+      <div className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+        <div className="flex items-start gap-3">
+          <div className={`p-2 rounded-full ${getPriorityColor(suggestion.priority)}`}>
+            {getIcon(suggestion.type)}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h4 className="font-medium text-gray-900">{suggestion.title}</h4>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(suggestion.priority)}`}>
+                {suggestion.priority}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600">{suggestion.description}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-grey-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-grey-900 mb-2">Profile</h1>
-              <p className="text-grey-600">Manage your personal information and preferences</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
+              <p className="text-gray-600">Manage your personal information and preferences</p>
             </div>
             <div className="flex items-center gap-2">
               {isEditing ? (
@@ -186,7 +335,7 @@ export default function ProfilePage() {
                       className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                         activeTab === tab.id
                           ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                          : 'text-grey-600 hover:text-grey-900 hover:bg-grey-100'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
                       <tab.icon className="h-4 w-4 mr-3" />
@@ -209,11 +358,11 @@ export default function ProfilePage() {
                       <span>Completeness</span>
                       <span>85%</span>
                     </div>
-                    <div className="w-full bg-grey-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
                     </div>
                   </div>
-                  <div className="text-xs text-grey-600">
+                  <div className="text-xs text-gray-600">
                     Add more skills and experience to improve your profile visibility.
                   </div>
                 </div>
@@ -250,13 +399,13 @@ export default function ProfilePage() {
                             </button>
                           )}
                         </div>
-                        <p className="text-sm text-grey-600 mt-2 text-center">Profile Photo</p>
+                        <p className="text-sm text-gray-600 mt-2 text-center">Profile Photo</p>
                       </div>
 
                       {/* Form Fields */}
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Full Name</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                           <Input
                             value={editData.name}
                             onChange={(e) => setEditData({...editData, name: e.target.value})}
@@ -265,7 +414,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Email</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                           <Input
                             value={editData.email}
                             onChange={(e) => setEditData({...editData, email: e.target.value})}
@@ -274,7 +423,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Phone</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                           <Input
                             value={editData.phone}
                             onChange={(e) => setEditData({...editData, phone: e.target.value})}
@@ -283,7 +432,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Location</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                           <Input
                             value={editData.location}
                             onChange={(e) => setEditData({...editData, location: e.target.value})}
@@ -292,7 +441,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Job Title</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
                           <Input
                             value={editData.title}
                             onChange={(e) => setEditData({...editData, title: e.target.value})}
@@ -301,7 +450,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-grey-700 mb-1">Company</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                           <Input
                             value={editData.company}
                             onChange={(e) => setEditData({...editData, company: e.target.value})}
@@ -313,13 +462,13 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="mt-6">
-                      <label className="block text-sm font-medium text-grey-700 mb-1">Bio</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                       <textarea
                         value={editData.bio}
                         onChange={(e) => setEditData({...editData, bio: e.target.value})}
                         disabled={!isEditing}
                         rows={4}
-                        className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-grey-50 disabled:text-grey-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                         placeholder="Tell us about yourself..."
                       />
                     </div>
@@ -335,7 +484,7 @@ export default function ProfilePage() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-grey-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           <Globe className="h-4 w-4 inline mr-1" />
                           Website
                         </label>
@@ -350,7 +499,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-grey-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           <Github className="h-4 w-4 inline mr-1" />
                           GitHub
                         </label>
@@ -365,7 +514,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-grey-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           <Linkedin className="h-4 w-4 inline mr-1" />
                           LinkedIn
                         </label>
@@ -380,7 +529,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-grey-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           <Twitter className="h-4 w-4 inline mr-1" />
                           Twitter
                         </label>
@@ -394,6 +543,160 @@ export default function ProfilePage() {
                           placeholder="https://twitter.com/username"
                         />
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Resume Tab */}
+            {activeTab === 'resume' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* Resume Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Resume Overview</CardTitle>
+                    <CardDescription>Manage and optimize your resume</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Current Resume Info */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-8 w-8 text-blue-600" />
+                          <div>
+                            <h3 className="font-medium text-gray-900">{resumeData.fileName}</h3>
+                            <p className="text-sm text-gray-600">Last updated: {new Date(resumeData.lastUpdated).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outlined" size="sm" onClick={() => setShowResumePreview(true)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </Button>
+                          <Button variant="outlined" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Resume Score */}
+                      <div className="flex flex-col items-center text-center">
+                        <ScoreCircle score={resumeData.score} />
+                        <h3 className="font-medium text-gray-900 mt-2">Resume Score</h3>
+                        <p className="text-sm text-gray-600">
+                          {resumeData.score >= 80 ? 'Excellent' : resumeData.score >= 60 ? 'Good' : 'Needs Improvement'}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Resume Actions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Resume Actions</CardTitle>
+                    <CardDescription>Upload, generate, or enhance your resume</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Button 
+                        className="h-auto p-4 flex flex-col items-center gap-2"
+                        onClick={handleUploadResume}
+                        disabled={isProcessingResume}
+                      >
+                        <Upload className="h-6 w-6" />
+                        <span className="text-sm">Upload Resume</span>
+                      </Button>
+                      <Button 
+                        variant="outlined"
+                        className="h-auto p-4 flex flex-col items-center gap-2"
+                        onClick={handleGenerateResume}
+                        disabled={isProcessingResume}
+                      >
+                        <Wand2 className="h-6 w-6" />
+                        <span className="text-sm">Generate Resume</span>
+                      </Button>
+                      <Button 
+                        variant="outlined"
+                        className="h-auto p-4 flex flex-col items-center gap-2"
+                        onClick={handleEnhanceResume}
+                        disabled={isProcessingResume}
+                      >
+                        <Sparkles className="h-6 w-6" />
+                        <span className="text-sm">AI Enhance</span>
+                      </Button>
+                    </div>
+                    {isProcessingResume && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <span className="text-sm text-blue-700">Processing your resume...</span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Resume Analysis */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Resume Analysis</CardTitle>
+                    <CardDescription>AI-powered insights to improve your resume</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Strengths */}
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          Strengths
+                        </h4>
+                        <ul className="space-y-2">
+                          {resumeData.analysis.strengths.map((strength, index) => (
+                            <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+                              {strength}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Areas for Improvement */}
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                          Areas for Improvement
+                        </h4>
+                        <ul className="space-y-2">
+                          {resumeData.analysis.weaknesses.map((weakness, index) => (
+                            <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
+                              {weakness}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Suggestions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>AI Suggestions</CardTitle>
+                    <CardDescription>Personalized recommendations to improve your resume</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {resumeData.suggestions.map((suggestion, index) => (
+                        <SuggestionCard key={index} suggestion={suggestion} />
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -426,10 +729,10 @@ export default function ProfilePage() {
                   <CardContent>
                     <div className="space-y-4">
                       {editData.skills.map((skill, index) => (
-                        <div key={index} className="border border-grey-200 rounded-lg p-4">
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                             <div>
-                              <label className="block text-sm font-medium text-grey-700 mb-1">Skill</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Skill</label>
                               <Input
                                 value={skill.name}
                                 onChange={(e) => updateSkill(index, 'name', e.target.value)}
@@ -438,12 +741,12 @@ export default function ProfilePage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-grey-700 mb-1">Category</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                               <select
                                 value={skill.category}
                                 onChange={(e) => updateSkill(index, 'category', e.target.value)}
                                 disabled={!isEditing}
-                                className="w-full px-3 py-2 border border-grey-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-grey-50"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                               >
                                 <option value="Programming">Programming</option>
                                 <option value="Framework">Framework</option>

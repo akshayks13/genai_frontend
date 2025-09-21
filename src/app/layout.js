@@ -1,21 +1,16 @@
+"use client";
+
 import "./globals.css";
+import { usePathname } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "./providers";
 
-export const metadata = {
-  title: "CareerAI - AI-Powered Career Advisor",
-  description: "Empowering students and professionals with AI-driven career guidance, skill mapping, and personalized roadmaps for the future of work.",
-  keywords: "career advice, AI career guidance, skill assessment, career roadmap, job trends",
-  authors: [{ name: "CareerAI Team" }],
-  openGraph: {
-    title: "CareerAI - AI-Powered Career Advisor",
-    description: "Get personalized career guidance powered by AI",
-    type: "website",
-  },
-};
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const hideLayout = pathname.startsWith("/auth");
+
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen bg-background font-sans antialiased">
