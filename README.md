@@ -1,4 +1,4 @@
-# CareerAI - AI-Powered Career Advisor
+# Growgle - AI-Powered Career Advisor
 
 A modern, Google-inspired web application that empowers students and professionals with AI-driven career guidance, personalized skill mapping, and intelligent career roadmaps.
 
