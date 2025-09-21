@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -140,6 +140,10 @@ export default function ProfilePage() {
   const [editData, setEditData] = useState(userProfile);
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [isProcessingResume, setIsProcessingResume] = useState(false);
+  const [uploadedResume, setUploadedResume] = useState(null);
+  const [resumeFileName, setResumeFileName] = useState(resumeData.fileName);
+  const fileInputRef = useRef(null);
+
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
@@ -556,6 +560,21 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setUploadedResume(URL.createObjectURL(file));
+                      setResumeFileName(file.name);
+                    }
+                  }}
+                />
+
                 {/* Resume Overview */}
                 <Card>
                   <CardHeader>
@@ -569,29 +588,46 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-3">
                           <FileText className="h-8 w-8 text-blue-600" />
                           <div>
-                            <h3 className="font-medium text-gray-900">{resumeData.fileName}</h3>
-                            <p className="text-sm text-gray-600">Last updated: {new Date(resumeData.lastUpdated).toLocaleDateString()}</p>
+                            <h3 className="font-medium text-gray-900">
+                              {uploadedResume ? resumeFileName || 'Uploaded Resume' : resumeData.fileName}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Last updated: {uploadedResume ? 'Just now' : new Date(resumeData.lastUpdated).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button variant="outlined" size="sm" onClick={() => setShowResumePreview(true)}>
+
+                        {/* Only show View Resume button if a resume is uploaded */}
+                        {uploadedResume && (
+                          <Button 
+                            variant="outlined" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowResumePreview(true);
+                            }}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
-                            Preview
+                            View Resume
                           </Button>
-                          <Button variant="outlined" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
+                        )}
                       </div>
 
                       {/* Resume Score */}
                       <div className="flex flex-col items-center text-center">
-                        <ScoreCircle score={resumeData.score} />
-                        <h3 className="font-medium text-gray-900 mt-2">Resume Score</h3>
-                        <p className="text-sm text-gray-600">
-                          {resumeData.score >= 80 ? 'Excellent' : resumeData.score >= 60 ? 'Good' : 'Needs Improvement'}
-                        </p>
+                        {(() => {
+                          const stableScore = resumeData.score || 82;
+                          return (
+                            <>
+                              <ScoreCircle score={stableScore} />
+                              <h3 className="font-medium text-gray-900 mt-2">Resume Score</h3>
+                              <p className="text-sm text-gray-600">
+                                {stableScore >= 80 ? 'Excellent' : stableScore >= 60 ? 'Good' : 'Needs Improvement'}
+                              </p>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </CardContent>
@@ -607,7 +643,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <Button 
                         className="h-auto p-4 flex flex-col items-center gap-2"
-                        onClick={handleUploadResume}
+                        onClick={() => fileInputRef.current?.click()}
                         disabled={isProcessingResume}
                       >
                         <Upload className="h-6 w-6" />
@@ -632,16 +668,45 @@ export default function ProfilePage() {
                         <span className="text-sm">AI Enhance</span>
                       </Button>
                     </div>
+
                     {isProcessingResume && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                          <span className="text-sm text-blue-700">Processing your resume...</span>
-                        </div>
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-sm text-blue-700">Processing your resume...</span>
                       </div>
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Resume Preview Popup */}
+                {showResumePreview && uploadedResume && (
+  <div 
+    className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2"
+    onClick={(e) => {
+      if (e.target === e.currentTarget) setShowResumePreview(false);
+    }}
+  >
+    <div className="bg-white w-full max-w-7xl h-full max-h-[95vh] p-4 rounded-lg relative shadow-2xl">
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowResumePreview(false);
+        }}
+        className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors z-10"
+      >
+        <X className="h-5 w-5" />
+      </button>
+      <div className="w-full h-full pt-12">
+        <iframe
+          src={uploadedResume}
+          className="w-full h-full rounded border"
+          frameBorder="0"
+        />
+      </div>
+    </div>
+  </div>
+)}
 
                 {/* Resume Analysis */}
                 <Card>
