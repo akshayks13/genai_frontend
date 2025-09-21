@@ -125,7 +125,7 @@ export default function SignupPage() {
 
                   <div className="space-y-2">
                     <label htmlFor="skill" className="block text-sm font-semibold text-gray-700">
-                      Reading Interest
+                      Career Options
                     </label>
                     <div className="relative">
                       <BookOpen className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -137,7 +137,7 @@ export default function SignupPage() {
                         className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white appearance-none cursor-pointer"
                         required
                       >
-                        <option value="">Select your Interest</option>
+                        <option value="">Select your Career</option>
                         <option value="webdev">Web Development</option>
                         <option value="appdev">App Development</option>
                         <option value="es">Embedded Systems</option>
