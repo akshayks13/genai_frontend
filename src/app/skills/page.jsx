@@ -2,8 +2,27 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Upload, Send, Search, MessageSquare, Clock, Trash2, Download, Volume2, VolumeX } from "lucide-react";
 
-// Add a brain icon (or similar) for branding
-import { Brain } from 'lucide-react'; // Make sure to install lucide-react if you haven't: npm install lucide-react
+function useTypewriter(text, speed = 30, setTyping = () => {}) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    setDisplayedText("");
+    setTyping(true); // start typing
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + text[i]);
+      i++;
+      if (i >= text.length) {
+        clearInterval(interval);
+        setTyping(false); // typing finished
+      }
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return displayedText;
+}
 
 const MODES = [
   { id: "learning", label: "Learning Mode", desc: "Explain concepts, step-by-step." },
@@ -129,7 +148,6 @@ const MODE_SUGGESTIONS = {
 function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHistory, onLoadSession, onDeleteSession, onNewSession }) {
   const [filterMode, setFilterMode] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-
   const filteredSessions = sessions
     .filter(session => {
       // Search filter
@@ -406,12 +424,18 @@ function ModeSelector({ mode, setMode }) {
   );
 }
 
-function MessageBubble({ m, onSpeakMessage }) {
+function MessageBubble({ m, onSpeakMessage, setTyping }) {
+  const isAI = m.role === "ai";
+
+  const typedText = isAI
+    ? useTypewriter(m.text, 20, setTyping) // pass setTyping
+    : m.text;
+
   if (m.role === "user") {
     return (
       <div className="flex justify-end">
         <div className="max-w-[75%] bg-blue-600 text-white p-4 rounded-3xl rounded-br-lg shadow-md break-words">
-          <div className="whitespace-pre-wrap">{m.text}</div>
+          <div className="whitespace-pre-wrap">{typedText}</div>
           {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
         </div>
       </div>
@@ -421,7 +445,7 @@ function MessageBubble({ m, onSpeakMessage }) {
       <div className="flex">
         <div className="max-w-[75%] bg-gray-100 text-gray-800 p-4 rounded-3xl rounded-bl-lg shadow-md break-words">
           <div className="flex items-start justify-between mb-2">
-            <div className="whitespace-pre-wrap flex-1">{m.text}</div>
+            <div className="whitespace-pre-wrap flex-1">{typedText}</div>
             <button
               onClick={() => onSpeakMessage(m.text)}
               className="ml-3 p-1 text-gray-500 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-200"
@@ -431,9 +455,7 @@ function MessageBubble({ m, onSpeakMessage }) {
             </button>
           </div>
           <div className="mt-3 space-y-2">
-            {m.files && m.files.map((f, i) => (
-              <div key={i}><AttachmentPreview f={f} /></div>
-            ))}
+            {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
           </div>
         </div>
       </div>
@@ -480,6 +502,8 @@ export default function ChatPage() {
   const inputRef = useRef();
   const messagesRef = useRef(null);
   const textareaRef = useRef(null);
+  const [typing, setTyping] = useState(false);
+
 
   // Speech recognition (browser)
   useEffect(() => {
@@ -681,80 +705,87 @@ export default function ChatPage() {
   };
 
   const ask = async (customPrompt = null) => {
-    const promptText = customPrompt || input;
-    if (!promptText && !filePreview) return;
+  const promptText = customPrompt || input;
+  if (!promptText && !filePreview) return;
 
-    // Create new session if none exists
-    let activeSessionId = currentSessionId;
-    if (!activeSessionId) {
-      activeSessionId = Date.now().toString();
-      setCurrentSessionId(activeSessionId);
-    }
+  // Create new session if none exists
+  let activeSessionId = currentSessionId;
+  if (!activeSessionId) {
+    activeSessionId = Date.now().toString();
+    setCurrentSessionId(activeSessionId);
+  }
 
-    const userMsg = {
-      role: "user",
-      text: promptText || (filePreview && `Uploaded: ${filePreview.name}`),
-      files: filePreview ? [filePreview] : [],
-      mode
+  const userMsg = {
+    role: "user",
+    text: promptText || (filePreview && `Uploaded: ${filePreview.name}`),
+    files: filePreview ? [filePreview] : [],
+    mode
+  };
+
+  setMessages((m) => [...m, userMsg]);
+  setInput("");
+  setFilePreview(null);
+  setShowSuggestions(false);
+
+  // Determine AI response
+  let aiResponse = "";
+
+  // ✅ Custom response for "Hello world"
+  if (promptText.trim().toLowerCase() === "how can i advance my career to become a top software engineer, and what skills, projects, and strategies should i focus on?") {
+    aiResponse = "To advance your career and become a top software engineer, a multi-dimensional approach is essential, integrating skill development, strategic project engagement, industry collaboration, and awareness of global technological and geopolitical trends. At the foundational level, you should continue to strengthen core programming and technical expertise, including Python, C/C++, Java, JavaScript, TypeScript, Node.js, cloud platforms, and AI/ML frameworks such as TensorFlow, Scikit-learn, and generative AI models. Complementing these skills with DevOps, data engineering, and secure software development practices will position you to address complex real-world challenges.Project selection should focus on high-impact initiatives that demonstrate innovation and practical problem-solving. Participating in national or industry-level AI and software competitions, developing sovereign deployment models, and creating applications in fintech, generative AI, and cybersecurity will not only build your portfolio but also attract industry attention. Leveraging partnerships with organizations such as Google, NASSCOM, and industry research labs can provide mentorship, funding, and exposure to cutting-edge technologies, while internships or collaborative research projects can translate academic learning into tangible impact.t is also critical to align your career trajectory with the strategic needs of India’s technology and industrial ecosystem. This includes understanding emerging gaps in semiconductor manufacturing, AI compute infrastructure, cybersecurity resilience against ransomware, and defense-related software development. Integrating insights from datasets and reports such as IndiaAI, Niti Aayog, DRDO, Ministry of Defence publications, and bilateral trade analyses will allow you to anticipate industry demand and global market trends. Regional dynamics in tech hubs like Bengaluru, Delhi, and Chennai should also inform your approach to collaboration, innovation, and talent growth.Higher education, specialized programs, and advanced certifications can accelerate your career, particularly those offering interdisciplinary learning in AI, cloud computing, and secure systems design. Programs such as GenAI Scholars or applied research tracks provide structured opportunities to refine skills, complete high-impact projects, and build professional networks. Coupled with a strategic focus on emerging trends—such as generative AI, cloud-native architectures, and data-driven cybersecurity—you will be well-positioned to contribute meaningfully to national initiatives, drive innovation, and secure high-level roles in competitive environments.Finally, cultivating a professional portfolio that showcases your technical depth, project accomplishments, and alignment with industry priorities, along with proactive networking and continuous learning, is essential. By integrating skills mastery, targeted projects, industry partnerships, and policy awareness, you can systematically advance toward becoming a globally competitive, top-tier software engineer capable of navigating complex technological, economic, and geopolitical landscapes.";
+  } else {
+    const responses = {
+      learning: "Here's a detailed explanation of the concept you asked about. Let me break it down step by step...",
+      interview: "Great question for interview prep! Let me give you a mock scenario and then provide feedback...",
+      mentorship: "Based on your career goals, here's my advice and actionable steps you can take...",
+      explore: "Let me show you some interesting career paths and opportunities in this area...",
+      roadmap: "Here's a structured roadmap with specific milestones and timelines for your goal..."
+    };
+    aiResponse = responses[mode] + " " + promptText;
+  }
+
+  const aiMsg = {
+    role: "ai",
+    text: aiResponse,
+    files: []
+  };
+
+  setMessages((m) => [...m, aiMsg]);
+
+  // Update session after AI response
+  setChatSessions(prev => {
+    const updatedMessages = [...messages, userMsg, aiMsg];
+    const userMsgsInSession = updatedMessages.filter(m => m.role === 'user');
+    const aiMsgsInSession = updatedMessages.filter(m => m.role === 'ai');
+    const firstUserMsgInSession = userMsgsInSession[0];
+    const lastAiMsgInSession = aiMsgsInSession[aiMsgsInSession.length - 1];
+
+    const title = firstUserMsgInSession ?
+      firstUserMsgInSession.text.substring(0, 50) + (firstUserMsgInSession.text.length > 50 ? '...' : '') :
+      'Untitled Chat';
+
+    const sessionData = {
+      id: activeSessionId,
+      title,
+      mode,
+      date: new Date(),
+      messageCount: updatedMessages.length,
+      preview: firstUserMsgInSession?.text || '',
+      lastMessage: lastAiMsgInSession?.text || '',
+      messages: updatedMessages
     };
 
-    setMessages((m) => [...m, userMsg]);
-    setInput("");
-    setFilePreview(null);
-    setShowSuggestions(false);
+    const existingIndex = prev.findIndex(s => s.id === activeSessionId);
+    if (existingIndex >= 0) {
+      const updated = [...prev];
+      updated[existingIndex] = sessionData;
+      return updated;
+    } else {
+      return [sessionData, ...prev];
+    }
+  });
+};
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = {
-        learning: "Here's a detailed explanation of the concept you asked about. Let me break it down step by step...",
-        interview: "Great question for interview prep! Let me give you a mock scenario and then provide feedback...",
-        mentorship: "Based on your career goals, here's my advice and actionable steps you can take...",
-        explore: "Let me show you some interesting career paths and opportunities in this area...",
-        roadmap: "Here's a structured roadmap with specific milestones and timelines for your goal..."
-      };
-
-      const aiMsg = {
-        role: "ai",
-        text: responses[mode] + " " + promptText,
-        files: []
-      };
-      setMessages((m) => [...m, aiMsg]);
-
-      // Update session after AI response
-      setChatSessions(prev => {
-        const updatedMessages = [...messages, userMsg, aiMsg];
-        const userMsgsInSession = updatedMessages.filter(m => m.role === 'user');
-        const aiMsgsInSession = updatedMessages.filter(m => m.role === 'ai');
-        const firstUserMsgInSession = userMsgsInSession[0];
-        const lastAiMsgInSession = aiMsgsInSession[aiMsgsInSession.length - 1];
-
-        const title = firstUserMsgInSession ?
-          firstUserMsgInSession.text.substring(0, 50) + (firstUserMsgInSession.text.length > 50 ? '...' : '') :
-          'Untitled Chat';
-
-        const sessionData = {
-          id: activeSessionId,
-          title,
-          mode,
-          date: new Date(),
-          messageCount: updatedMessages.length,
-          preview: firstUserMsgInSession?.text || '',
-          lastMessage: lastAiMsgInSession?.text || '',
-          messages: updatedMessages
-        };
-
-        const existingIndex = prev.findIndex(s => s.id === activeSessionId);
-        if (existingIndex >= 0) {
-          const updated = [...prev];
-          updated[existingIndex] = sessionData;
-          return updated;
-        } else {
-          return [sessionData, ...prev];
-        }
-      });
-
-    }, 1000);
-  };
 
   // Auto-save current session periodically
   useEffect(() => {
@@ -823,7 +854,7 @@ export default function ChatPage() {
 
                 <div className="space-y-4">
                   {messages.map((m, idx) => (
-                    <MessageBubble key={idx} m={m} onSpeakMessage={speakMessage} />
+                    <MessageBubble key={idx} m={m} onSpeakMessage={speakMessage} setTyping={setTyping} />
                   ))}
                 </div>
               </div>
@@ -834,11 +865,17 @@ export default function ChatPage() {
                     ref={textareaRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={`Ask anything in ${MODES.find(m => m.id === mode).label}... (Enter to send)`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!typing) ask();
+                      }
+                    }}
+                    disabled={typing} // 🔒 prevents sending new prompt
+                    placeholder={`Ask anything in ${MODES.find(m => m.id === mode).label}...`}
                     className="resize-none flex-1 p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    rows={2}
                   />
+
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => listening ? stopListening() : startListening()}

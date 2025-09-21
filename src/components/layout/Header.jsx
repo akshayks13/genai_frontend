@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from "next/image";
 import { 
   Menu, 
   X, 
@@ -54,11 +55,15 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-              <Target className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-grey-900">CareerAI</span>
-          </Link>
+  <Image 
+    src="/logo.png"   // <-- put your logo inside /public/logo.png
+    alt="CareerAI Logo"
+    width={120}        // adjust size
+    height={120}
+    className="rounded-lg"
+  />
+</Link>
+
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">

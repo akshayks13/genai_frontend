@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion ,AnimatePresence} from 'framer-motion';
 import { 
   ArrowRight, 
   Brain, 
@@ -45,14 +45,27 @@ const features = [
   }
 ];
 
-const stats = [
-  { number: '10K+', label: 'Career Paths Analyzed' },
-  { number: '500+', label: 'Industry Domains' },
-  { number: '95%', label: 'Success Rate' },
-  { number: '24/7', label: 'AI Support' }
+const quotes = [
+  {
+    text: "Choose a job you love, and you will never have to work a day in your life.",
+    author: "– Confucius",
+  },
+  {
+    text: "Opportunities don’t happen. You create them.",
+    author: "– Chris Grosser",
+  },
 ];
 
 export default function Home() {
+  const [currentQuoteIndex, setCurrentQuoteIndex] = React.useState(0);
+
+React.useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
+  }, 3000); // change quote every 5 seconds
+  return () => clearInterval(interval);
+}, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -89,12 +102,13 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
-              <Button size="lg" className="text-lg px-8 py-4" asChild>
-                <Link href="/skills">
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+              <Button size="lg" className="px-8 py-4" asChild>
+              <Link href="/skills" className="flex items-center gap-2 text-lg">
+                Get Started Free
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
+
               <Button variant="outlined" size="lg" className="text-lg px-8 py-4" asChild>
                 <Link href="/dashboard">
                   View Demo
@@ -103,21 +117,33 @@ export default function Home() {
             </motion.div>
 
             {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16"
-            >
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-grey-900 mb-1">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm text-grey-600">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
+            {/* Quote Carousel */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.4 }}
+  className="mt-16 flex justify-center"
+>
+  <div className="max-w-xl w-full text-center">
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={currentQuoteIndex}
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: 100, opacity: 0 }}
+        transition={{ duration: 0.6 }}
+        className="italic text-gray-700 text-sm md:text-base font-light tracking-wide"
+      >
+        "{quotes[currentQuoteIndex].text}"
+        <span className="block mt-1 text-gray-500 text-xs md:text-sm font-medium">
+          {quotes[currentQuoteIndex].author}
+        </span>
+      </motion.div>
+    </AnimatePresence>
+  </div>
+</motion.div>
+
+
           </div>
         </div>
       </section>
@@ -238,7 +264,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4" asChild>
-                <Link href="/skills">
+                <Link href="/skills" className="flex items-center gap-2 text-lg">
                   Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
