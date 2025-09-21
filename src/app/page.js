@@ -48,11 +48,11 @@ const features = [
 const quotes = [
   {
     text: "Choose a job you love, and you will never have to work a day in your life.",
-    author: "– Confucius",
+    author: "- Confucius",
   },
   {
-    text: "Opportunities don’t happen. You create them.",
-    author: "– Chris Grosser",
+    text: "Opportunities don't happen. You create them.",
+    author: "- Chris Grosser",
   },
 ];
 
@@ -193,7 +193,7 @@ React.useEffect(() => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-grey-900 mb-4">
-              How CareerAI Works
+              How Growgle Works
             </h2>
             <p className="text-xl text-grey-600 max-w-2xl mx-auto">
               Three simple steps to unlock your career potential
@@ -260,7 +260,7 @@ React.useEffect(() => {
               Ready to accelerate your career?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of professionals who&rsquo;ve found their perfect career path with CareerAI.
+              Join thousands of professionals who&rsquo;ve found their perfect career path with Growgle.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4" asChild>

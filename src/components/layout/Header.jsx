@@ -57,7 +57,7 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-2">
   <Image 
     src="/logo.png"   // <-- put your logo inside /public/logo.png
-    alt="CareerAI Logo"
+    alt="Growgle Logo"
     width={120}        // adjust size
     height={120}
     className="rounded-lg"

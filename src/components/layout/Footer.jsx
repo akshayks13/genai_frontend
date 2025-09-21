@@ -13,7 +13,7 @@ export default function Footer() {
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">C</span>
               </div>
-              <span className="text-xl font-bold text-grey-900">CareerAI</span>
+              <span className="text-xl font-bold text-grey-900">Growgle</span>
             </div>
             <p className="text-grey-600 max-w-md">
               Empowering students and professionals with AI-driven career guidance, 
@@ -94,7 +94,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="border-t border-grey-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-grey-600 text-sm">
-            © 2025 CareerAI. All rights reserved.
+            © 2025 Growgle. All rights reserved.
           </p>
           <p className="text-grey-600 text-sm flex items-center mt-2 md:mt-0">
             Made with <Heart className="h-4 w-4 text-red-500 mx-1" /> for the future workforce
