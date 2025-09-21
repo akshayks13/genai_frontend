@@ -205,7 +205,7 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
   return (
     <div className="sticky top-6 space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg flex items-center gap-2 text-gray-800">
             <MessageSquare size={20} className="text-blue-500" />
@@ -252,20 +252,6 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
             <option value="messages">Most Active</option>
             <option value="title">Alphabetical</option>
           </select>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 text-center">
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-            <div className="text-xl font-bold text-blue-600">{sessions.length}</div>
-            <div className="text-xs text-blue-600">Total Chats</div>
-          </div>
-          <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-            <div className="text-xl font-bold text-green-600">
-              {sessions.reduce((sum, s) => sum + s.messageCount, 0)}
-            </div>
-            <div className="text-xs text-green-600">Messages</div>
-          </div>
         </div>
       </div>
 
@@ -818,8 +804,8 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 p-6 font-sans">
-      <div className="mx-20">
+    <div className="min-h-screen bg-white text-gray-800 p-2 font-sans">
+      <div className="mx-5">
         <header className="mb-10 flex flex-col items-center">
           <div className="w-full flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -841,7 +827,7 @@ export default function ChatPage() {
 
 
         <main className="grid grid-cols-12 gap-6">
-          <section className="col-span-8 bg-white rounded-xl shadow-lg overflow-hidden">
+          <section className="col-span-9 bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="h-[70vh] flex flex-col">
               <div ref={messagesRef} className="flex-1 overflow-auto p-6">
                 {messages.length === 0 && showSuggestions && (
@@ -936,7 +922,7 @@ export default function ChatPage() {
             </div>
           </section>
 
-          <aside className="col-span-4">
+          <aside className="col-span-3">
             <ChatHistory 
               sessions={chatSessions}
               currentSessionId={currentSessionId}

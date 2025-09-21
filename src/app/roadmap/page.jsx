@@ -16,97 +16,39 @@ const RoadmapDashboard = () => {
     },
     {
       id: 2,
-      title: 'Data Science Specialist',
-      description: 'Complete path to master data science and machine learning',
+      title: 'Digital Marketing',
+      description: 'Comprehensive digital marketing and growth strategies',
       progress: 22,
-      duration: '8 months',
+      duration: '4 months',
       startDate: '2024-02-15',
     },
     {
       id: 3,
-      title: 'Mobile App Developer',
-      description: 'Learn to build native and cross-platform mobile applications',
+      title: 'Photography Basics',
+      description: 'Learn the fundamentals of photography and editing',
       progress: 78,
-      duration: '4 months',
+      duration: '3 months',
       startDate: '2023-09-01',
     }
   ]);
 
-  // State for showing/hiding the add form
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRoadmapTitle, setNewRoadmapTitle] = useState('');
+  const [newRoadmapDescription, setNewRoadmapDescription] = useState('');
   const [newRoadmapDuration, setNewRoadmapDuration] = useState('');
 
-  const predefinedCourses = [
-    { 
-      title: 'Full-Stack Developer', 
-      description: 'Personalized path to become a Full-Stack Developer',
-      durations: ['6 months', '9 months', '12 months', '15 months', '18 months']
-    },
-    { 
-      title: 'Data Science Specialist', 
-      description: 'Complete path to master data science and machine learning',
-      durations: ['8 months', '10 months', '12 months', '15 months']
-    },
-    { 
-      title: 'Mobile App Developer', 
-      description: 'Learn to build native and cross-platform mobile applications',
-      durations: ['4 months', '6 months', '8 months']
-    },
-    {
-      title: 'UI/UX Designer',
-      description: 'Master user interface and user experience design principles',
-      durations: ['3 months', '4 months', '6 months', '8 months', '10 months']
-    },
-    {
-      title: 'DevOps Engineer',
-      description: 'Learn deployment, automation, and infrastructure management',
-      durations: ['6 months', '9 months', '12 months']
-    },
-    {
-      title: 'Digital Marketing',
-      description: 'Comprehensive digital marketing and growth strategies',
-      durations: ['2 months', '3 months', '4 months']
-    },
-    {
-      title: 'Python Programming',
-      description: 'Master Python from basics to advanced concepts',
-      durations: ['2 months', '3 months', '4 months', '6 months']
-    },
-    {
-      title: 'Cybersecurity Analyst',
-      description: 'Learn cybersecurity fundamentals and advanced threat analysis',
-      durations: ['8 months', '10 months', '12 months', '15 months', '18 months']
-    },
-    {
-      title: 'Machine Learning Engineer',
-      description: 'Specialized path for ML engineering and AI development',
-      durations: ['10 months', '12 months', '15 months', '18 months']
-    },
-    {
-      title: 'Web Designer',
-      description: 'Focus on modern web design and frontend aesthetics',
-      durations: ['2 months', '4 months', '6 months']
-    }
-  ];
+  const predefinedDurations = ['1 month', '2 months', '3 months', '4 months', '6 months', '8 months', '10 months', '12 months'];
 
   const handleAddRoadmap = () => {
     if (!newRoadmapTitle || !newRoadmapDuration) {
-      alert('Please select a course and duration.');
+      alert('Please enter course name and select duration.');
       return;
-    }
-
-    const selectedCourse = predefinedCourses.find(course => course.title === newRoadmapTitle);
-
-    if (!selectedCourse) {
-        alert('Please select a valid course from the list.');
-        return;
     }
 
     const roadmap = {
       id: roadmaps.length + 1,
-      title: selectedCourse.title,
-      description: selectedCourse.description,
+      title: newRoadmapTitle,
+      description: newRoadmapDescription || 'No description provided',
       progress: 0,
       duration: newRoadmapDuration,
       startDate: new Date().toISOString().split('T')[0],
@@ -114,22 +56,12 @@ const RoadmapDashboard = () => {
 
     setRoadmaps([...roadmaps, roadmap]);
     setNewRoadmapTitle('');
+    setNewRoadmapDescription('');
     setNewRoadmapDuration('');
     setShowAddForm(false);
   };
 
-  const handleCourseChange = (e) => {
-    const title = e.target.value;
-    setNewRoadmapTitle(title);
-    setNewRoadmapDuration(''); // Reset duration when course changes
-  };
-
-  const getAvailableDurations = () => {
-    const selectedCourse = predefinedCourses.find(course => course.title === newRoadmapTitle);
-    return selectedCourse ? selectedCourse.durations : [];
-  };
-
-  const overallProgress = roadmaps.length > 0 ? Math.round(roadmaps.reduce((sum, roadmap) => sum + roadmap.progress, 0) / roadmaps.length) : 0;
+  const overallProgress = roadmaps.length > 0 ? Math.round(roadmaps.reduce((sum, r) => sum + r.progress, 0) / roadmaps.length) : 0;
   const totalMonths = roadmaps.reduce((sum, r) => sum + parseInt(r.duration), 0);
 
   return (
@@ -165,7 +97,7 @@ const RoadmapDashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg p-6 shadow-sm border">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -203,7 +135,7 @@ const RoadmapDashboard = () => {
           </div>
         </div>
 
-        {/* Add Roadmap Form - Only shows when showAddForm is true */}
+        {/* Add Roadmap Form */}
         {showAddForm && (
           <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
             <div className="flex justify-between items-center mb-4">
@@ -221,40 +153,29 @@ const RoadmapDashboard = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div className="md:col-span-2">
-                <label htmlFor="course-select" className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Course
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Course Name
                 </label>
-                <select
-                  id="course-select"
+                <input
+                  type="text"
+                  placeholder="Type your course..."
                   value={newRoadmapTitle}
-                  onChange={handleCourseChange}
+                  onChange={(e) => setNewRoadmapTitle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                >
-                  <option value="">Choose a learning path...</option>
-                  {predefinedCourses.map((course, index) => (
-                    <option key={index} value={course.title}>
-                      {course.title}
-                    </option>
-                  ))}
-                </select>
-                
+                />
               </div>
               <div>
-                <label htmlFor="duration-select" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Duration
                 </label>
                 <select
-                  id="duration-select"
                   value={newRoadmapDuration}
                   onChange={(e) => setNewRoadmapDuration(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                  disabled={!newRoadmapTitle}
                 >
                   <option value="">Select duration...</option>
-                  {getAvailableDurations().map((duration, index) => (
-                    <option key={index} value={duration}>
-                      {duration}
-                    </option>
+                  {predefinedDurations.map((duration, index) => (
+                    <option key={index} value={duration}>{duration}</option>
                   ))}
                 </select>
               </div>
