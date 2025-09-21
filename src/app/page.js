@@ -134,7 +134,7 @@ React.useEffect(() => {
         transition={{ duration: 0.6 }}
         className="italic text-gray-700 text-sm md:text-base font-light tracking-wide"
       >
-        "{quotes[currentQuoteIndex].text}"
+  &ldquo;{quotes[currentQuoteIndex].text}&rdquo;
         <span className="block mt-1 text-gray-500 text-xs md:text-sm font-medium">
           {quotes[currentQuoteIndex].author}
         </span>
@@ -260,7 +260,7 @@ React.useEffect(() => {
               Ready to accelerate your career?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of professionals who've found their perfect career path with CareerAI.
+              Join thousands of professionals who&rsquo;ve found their perfect career path with CareerAI.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4" asChild>
