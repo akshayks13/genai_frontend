@@ -67,13 +67,15 @@ npm run lint         # Run ESLint
 
 ## 🧭 User Flow
 
-Add your user flow diagram image below.
+<img width="914" height="440" alt="Screenshot 2025-09-21 at 10 02 52 PM" src="https://github.com/user-attachments/assets/98a66499-5f9f-4f34-b7ca-0a22da8d5e2c" />
 
+---
 
 ## 🏗 Architecture Overview
 
-Add your architecture diagram image below.
+<img width="898" height="446" alt="Screenshot 2025-09-21 at 10 03 07 PM" src="https://github.com/user-attachments/assets/5d289363-79b9-44fc-b064-0e956aaed598" />
 
+---
 
 ## Related Repositories
 
