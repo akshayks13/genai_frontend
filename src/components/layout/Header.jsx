@@ -28,7 +28,7 @@ const navigation = [
   { name: 'Trends', href: '/trends', icon: TrendingUp },
 ];
 
-export default function Header() {
+export default function Header(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
@@ -148,8 +148,8 @@ export default function Header() {
                           <UserCircle className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">John Doe</p>
-                          <p className="text-xs text-gray-500">john@example.com</p>
+                          <p className="text-sm font-medium text-gray-900">{props.name}</p>
+                          <p className="text-xs text-gray-500">{props.email}</p>
                         </div>
                       </div>
                     </div>
