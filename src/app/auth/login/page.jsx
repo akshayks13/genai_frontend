@@ -18,16 +18,17 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    rememberme: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -49,8 +50,21 @@ export default function LoginPage() {
     }
     setIsLoading(true);
     try {
-      await loginUser(formData);
-      window.location.href = "/dashboard";
+      const res = await loginUser(formData);
+      const payload = res?.data?.data;
+      if (payload?.token) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", payload.token);
+          if (payload.email) localStorage.setItem("userEmail", payload.email);
+          if (payload.name) localStorage.setItem("userName", payload.name);
+        }
+      }
+      const params =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search)
+          : null;
+      const nextPath = params?.get("next") || "/dashboard";
+      window.location.href = nextPath;
     } catch (err) {
       setError(err.message || "Login failed");
     }
@@ -156,6 +170,9 @@ export default function LoginPage() {
               <label className="flex items-center group cursor-pointer">
                 <input
                   type="checkbox"
+                  name="rememberme"
+                  checked={formData.rememberme}
+                  onChange={handleInputChange}
                   className="h-5 w-5 text-sky-400 focus:ring-sky-400 border-gray-300 rounded transition-colors"
                 />
                 <span className="ml-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
