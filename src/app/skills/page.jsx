@@ -485,11 +485,17 @@ export default function ChatPage() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [speaking, setSpeaking] = useState(false);
   const [searchHistory, setSearchHistory] = useState("");
+  const [loaded, setLoaded] = useState(false); // New state for animation trigger
   const inputRef = useRef();
   const messagesRef = useRef(null);
   const textareaRef = useRef(null);
   const [typing, setTyping] = useState(false);
 
+  // Trigger loading animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Speech recognition (browser)
   useEffect(() => {
@@ -691,87 +697,86 @@ export default function ChatPage() {
   };
 
   const ask = async (customPrompt = null) => {
-  const promptText = customPrompt || input;
-  if (!promptText && !filePreview) return;
+    const promptText = customPrompt || input;
+    if (!promptText && !filePreview) return;
 
-  // Create new session if none exists
-  let activeSessionId = currentSessionId;
-  if (!activeSessionId) {
-    activeSessionId = Date.now().toString();
-    setCurrentSessionId(activeSessionId);
-  }
-
-  const userMsg = {
-    role: "user",
-    text: promptText || (filePreview && `Uploaded: ${filePreview.name}`),
-    files: filePreview ? [filePreview] : [],
-    mode
-  };
-
-  setMessages((m) => [...m, userMsg]);
-  setInput("");
-  setFilePreview(null);
-  setShowSuggestions(false);
-
-  // Determine AI response
-  let aiResponse = "";
-
-  // ✅ Custom response for "Hello world"
-  if (promptText.trim().toLowerCase() === "how can i advance my career to become a top software engineer, and what skills, projects, and strategies should i focus on?") {
-    aiResponse = "To advance your career and become a top software engineer, a multi-dimensional approach is essential, integrating skill development, strategic project engagement, industry collaboration, and awareness of global technological and geopolitical trends. At the foundational level, you should continue to strengthen core programming and technical expertise, including Python, C/C++, Java, JavaScript, TypeScript, Node.js, cloud platforms, and AI/ML frameworks such as TensorFlow, Scikit-learn, and generative AI models. Complementing these skills with DevOps, data engineering, and secure software development practices will position you to address complex real-world challenges.Project selection should focus on high-impact initiatives that demonstrate innovation and practical problem-solving. Participating in national or industry-level AI and software competitions, developing sovereign deployment models, and creating applications in fintech, generative AI, and cybersecurity will not only build your portfolio but also attract industry attention. Leveraging partnerships with organizations such as Google, NASSCOM, and industry research labs can provide mentorship, funding, and exposure to cutting-edge technologies, while internships or collaborative research projects can translate academic learning into tangible impact.t is also critical to align your career trajectory with the strategic needs of India’s technology and industrial ecosystem. This includes understanding emerging gaps in semiconductor manufacturing, AI compute infrastructure, cybersecurity resilience against ransomware, and defense-related software development. Integrating insights from datasets and reports such as IndiaAI, Niti Aayog, DRDO, Ministry of Defence publications, and bilateral trade analyses will allow you to anticipate industry demand and global market trends. Regional dynamics in tech hubs like Bengaluru, Delhi, and Chennai should also inform your approach to collaboration, innovation, and talent growth.Higher education, specialized programs, and advanced certifications can accelerate your career, particularly those offering interdisciplinary learning in AI, cloud computing, and secure systems design. Programs such as GenAI Scholars or applied research tracks provide structured opportunities to refine skills, complete high-impact projects, and build professional networks. Coupled with a strategic focus on emerging trends—such as generative AI, cloud-native architectures, and data-driven cybersecurity—you will be well-positioned to contribute meaningfully to national initiatives, drive innovation, and secure high-level roles in competitive environments.Finally, cultivating a professional portfolio that showcases your technical depth, project accomplishments, and alignment with industry priorities, along with proactive networking and continuous learning, is essential. By integrating skills mastery, targeted projects, industry partnerships, and policy awareness, you can systematically advance toward becoming a globally competitive, top-tier software engineer capable of navigating complex technological, economic, and geopolitical landscapes.";
-  } else {
-    const responses = {
-      learning: "Here's a detailed explanation of the concept you asked about. Let me break it down step by step...",
-      interview: "Great question for interview prep! Let me give you a mock scenario and then provide feedback...",
-      mentorship: "Based on your career goals, here's my advice and actionable steps you can take...",
-      explore: "Let me show you some interesting career paths and opportunities in this area...",
-      roadmap: "Here's a structured roadmap with specific milestones and timelines for your goal..."
-    };
-    aiResponse = responses[mode] + " " + promptText;
-  }
-
-  const aiMsg = {
-    role: "ai",
-    text: aiResponse,
-    files: []
-  };
-
-  setMessages((m) => [...m, aiMsg]);
-
-  // Update session after AI response
-  setChatSessions(prev => {
-    const updatedMessages = [...messages, userMsg, aiMsg];
-    const userMsgsInSession = updatedMessages.filter(m => m.role === 'user');
-    const aiMsgsInSession = updatedMessages.filter(m => m.role === 'ai');
-    const firstUserMsgInSession = userMsgsInSession[0];
-    const lastAiMsgInSession = aiMsgsInSession[aiMsgsInSession.length - 1];
-
-    const title = firstUserMsgInSession ?
-      firstUserMsgInSession.text.substring(0, 50) + (firstUserMsgInSession.text.length > 50 ? '...' : '') :
-      'Untitled Chat';
-
-    const sessionData = {
-      id: activeSessionId,
-      title,
-      mode,
-      date: new Date(),
-      messageCount: updatedMessages.length,
-      preview: firstUserMsgInSession?.text || '',
-      lastMessage: lastAiMsgInSession?.text || '',
-      messages: updatedMessages
-    };
-
-    const existingIndex = prev.findIndex(s => s.id === activeSessionId);
-    if (existingIndex >= 0) {
-      const updated = [...prev];
-      updated[existingIndex] = sessionData;
-      return updated;
-    } else {
-      return [sessionData, ...prev];
+    // Create new session if none exists
+    let activeSessionId = currentSessionId;
+    if (!activeSessionId) {
+      activeSessionId = Date.now().toString();
+      setCurrentSessionId(activeSessionId);
     }
-  });
-};
 
+    const userMsg = {
+      role: "user",
+      text: promptText || (filePreview && `Uploaded: ${filePreview.name}`),
+      files: filePreview ? [filePreview] : [],
+      mode
+    };
+
+    setMessages((m) => [...m, userMsg]);
+    setInput("");
+    setFilePreview(null);
+    setShowSuggestions(false);
+
+    // Determine AI response
+    let aiResponse = "";
+
+    // Custom response for specific question
+    if (promptText.trim().toLowerCase() === "how can i advance my career to become a top software engineer, and what skills, projects, and strategies should i focus on?") {
+      aiResponse = "To advance your career and become a top software engineer, a multi-dimensional approach is essential, integrating skill development, strategic project engagement, industry collaboration, and awareness of global technological and geopolitical trends. At the foundational level, you should continue to strengthen core programming and technical expertise, including Python, C/C++, Java, JavaScript, TypeScript, Node.js, cloud platforms, and AI/ML frameworks such as TensorFlow, Scikit-learn, and generative AI models. Complementing these skills with DevOps, data engineering, and secure software development practices will position you to address complex real-world challenges.Project selection should focus on high-impact initiatives that demonstrate innovation and practical problem-solving. Participating in national or industry-level AI and software competitions, developing sovereign deployment models, and creating applications in fintech, generative AI, and cybersecurity will not only build your portfolio but also attract industry attention. Leveraging partnerships with organizations such as Google, NASSCOM, and industry research labs can provide mentorship, funding, and exposure to cutting-edge technologies, while internships or collaborative research projects can translate academic learning into tangible impact.t is also critical to align your career trajectory with the strategic needs of India's technology and industrial ecosystem. This includes understanding emerging gaps in semiconductor manufacturing, AI compute infrastructure, cybersecurity resilience against ransomware, and defense-related software development. Integrating insights from datasets and reports such as IndiaAI, Niti Aayog, DRDO, Ministry of Defence publications, and bilateral trade analyses will allow you to anticipate industry demand and global market trends. Regional dynamics in tech hubs like Bengaluru, Delhi, and Chennai should also inform your approach to collaboration, innovation, and talent growth.Higher education, specialized programs, and advanced certifications can accelerate your career, particularly those offering interdisciplinary learning in AI, cloud computing, and secure systems design. Programs such as GenAI Scholars or applied research tracks provide structured opportunities to refine skills, complete high-impact projects, and build professional networks. Coupled with a strategic focus on emerging trends—such as generative AI, cloud-native architectures, and data-driven cybersecurity—you will be well-positioned to contribute meaningfully to national initiatives, drive innovation, and secure high-level roles in competitive environments.Finally, cultivating a professional portfolio that showcases your technical depth, project accomplishments, and alignment with industry priorities, along with proactive networking and continuous learning, is essential. By integrating skills mastery, targeted projects, industry partnerships, and policy awareness, you can systematically advance toward becoming a globally competitive, top-tier software engineer capable of navigating complex technological, economic, and geopolitical landscapes.";
+    } else {
+      const responses = {
+        learning: "Here's a detailed explanation of the concept you asked about. Let me break it down step by step...",
+        interview: "Great question for interview prep! Let me give you a mock scenario and then provide feedback...",
+        mentorship: "Based on your career goals, here's my advice and actionable steps you can take...",
+        explore: "Let me show you some interesting career paths and opportunities in this area...",
+        roadmap: "Here's a structured roadmap with specific milestones and timelines for your goal..."
+      };
+      aiResponse = responses[mode] + " " + promptText;
+    }
+
+    const aiMsg = {
+      role: "ai",
+      text: aiResponse,
+      files: []
+    };
+
+    setMessages((m) => [...m, aiMsg]);
+
+    // Update session after AI response
+    setChatSessions(prev => {
+      const updatedMessages = [...messages, userMsg, aiMsg];
+      const userMsgsInSession = updatedMessages.filter(m => m.role === 'user');
+      const aiMsgsInSession = updatedMessages.filter(m => m.role === 'ai');
+      const firstUserMsgInSession = userMsgsInSession[0];
+      const lastAiMsgInSession = aiMsgsInSession[aiMsgsInSession.length - 1];
+
+      const title = firstUserMsgInSession ?
+        firstUserMsgInSession.text.substring(0, 50) + (firstUserMsgInSession.text.length > 50 ? '...' : '') :
+        'Untitled Chat';
+
+      const sessionData = {
+        id: activeSessionId,
+        title,
+        mode,
+        date: new Date(),
+        messageCount: updatedMessages.length,
+        preview: firstUserMsgInSession?.text || '',
+        lastMessage: lastAiMsgInSession?.text || '',
+        messages: updatedMessages
+      };
+
+      const existingIndex = prev.findIndex(s => s.id === activeSessionId);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = sessionData;
+        return updated;
+      } else {
+        return [sessionData, ...prev];
+      }
+    });
+  };
 
   // Auto-save current session periodically
   useEffect(() => {
@@ -803,16 +808,32 @@ export default function ChatPage() {
     createNewSession();
   };
 
+  // Animation classes
+  const getAnimationClass = (delay = 0) => {
+    return `transform transition-all duration-400 ease-out ${
+      loaded 
+        ? 'translate-y-0 opacity-100 scale-100' 
+        : 'translate-y-8 opacity-0 scale-95'
+    }`;
+  };
+
+  const getAnimationStyle = (delay = 0) => {
+    return {
+      transitionDelay: loaded ? `${delay}ms` : '0ms'
+    };
+  };
+
   return (
-    <div className="min-h-screen bg-white text-gray-800 p-2 font-sans">
+    <div className="min-h-screen text-gray-800 p-2 font-sans">
       <div className="mx-5">
-        <header className="mb-10 flex flex-col items-center">
+        {/* Header with animation */}
+        <header className={`mb-10 flex flex-col items-center ${getAnimationClass()}`} style={getAnimationStyle(0)}>
           <div className="w-full flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               {speaking && (
                 <button
                   onClick={stopSpeaking}
-                  className="px-4 py-2 text-sm bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex items-center gap-2 shadow-md"
+                  className="px-4 py-2 text-sm bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   <VolumeX size={16} />
                   Stop Reading
@@ -820,32 +841,40 @@ export default function ChatPage() {
               )}
             </div>
           </div>
-          {/* Mode selector moved below the main header line */}
-          <ModeSelector mode={mode} setMode={setMode} />
+          {/* Mode selector with animation */}
+          <div className={`${getAnimationClass()}`} style={getAnimationStyle(50)}>
+            <ModeSelector mode={mode} setMode={setMode} />
+          </div>
         </header>
-        {/* --- END UPDATED HEADER SECTION --- */}
-
 
         <main className="grid grid-cols-12 gap-6">
-          <section className="col-span-9 bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Chat section with animation */}
+          <section className={`col-span-9 bg-white/70 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden border border-white/20 ${getAnimationClass()}`} 
+                   style={getAnimationStyle(100)}>
             <div className="h-[70vh] flex flex-col">
               <div ref={messagesRef} className="flex-1 overflow-auto p-6">
                 {messages.length === 0 && showSuggestions && (
-                  <SuggestionCards
-                    mode={mode}
-                    suggestions={MODE_SUGGESTIONS[mode]}
-                    onSuggestionClick={handleSuggestionClick}
-                  />
+                  <div className={`${getAnimationClass()}`} style={getAnimationStyle(200)}>
+                    <SuggestionCards
+                      mode={mode}
+                      suggestions={MODE_SUGGESTIONS[mode]}
+                      onSuggestionClick={handleSuggestionClick}
+                    />
+                  </div>
                 )}
 
                 <div className="space-y-4">
                   {messages.map((m, idx) => (
-                    <MessageBubble key={idx} m={m} onSpeakMessage={speakMessage} setTyping={setTyping} />
+                    <div key={idx} className={`${getAnimationClass()}`} style={getAnimationStyle(150 + idx * 50)}>
+                      <MessageBubble m={m} onSpeakMessage={speakMessage} setTyping={setTyping} />
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <div className="border-t bg-gray-50 p-4">
+              {/* Input section with animation */}
+              <div className={`border-t bg-gray-50/70 backdrop-blur-sm p-4 ${getAnimationClass()}`} 
+                   style={getAnimationStyle(250)}>
                 <div className="flex gap-3 mb-3">
                   <textarea
                     ref={textareaRef}
@@ -857,18 +886,18 @@ export default function ChatPage() {
                         if (!typing) ask();
                       }
                     }}
-                    disabled={typing} // 🔒 prevents sending new prompt
-                    placeholder={`Ask anything in ${MODES.find(m => m.id === mode).label}...`}
-                    className="resize-none flex-1 p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    disabled={typing}
+                    placeholder={`Ask anything in ${MODES?.find(m => m.id === mode)?.label || mode}...`}
+                    className="resize-none flex-1 p-3 rounded-lg border border-gray-200/50 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md focus:shadow-lg"
                   />
 
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => listening ? stopListening() : startListening()}
-                      className={`p-3 rounded-lg transition-all ${
+                      className={`p-3 rounded-lg transition-all duration-300 hover:scale-105 ${
                         listening
-                          ? "bg-red-500 text-white shadow-lg"
-                          : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          ? "bg-red-500 text-white shadow-lg hover:shadow-xl"
+                          : "bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-600 hover:bg-gray-50/80 hover:shadow-md"
                       }`}
                       title={listening ? "Stop listening" : "Start voice input"}
                     >
@@ -876,7 +905,7 @@ export default function ChatPage() {
                     </button>
                     <button
                       onClick={() => ask()}
-                      className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                      className="p-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
                       title="Send message"
                     >
                       <Send size={20} />
@@ -885,7 +914,7 @@ export default function ChatPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200/50 hover:bg-gray-50/80 transition-all duration-300 hover:shadow-md hover:scale-105">
                     <Upload size={16} />
                     Upload File
                     <input
@@ -897,11 +926,11 @@ export default function ChatPage() {
                   </label>
 
                   {filePreview && (
-                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg">
+                    <div className="flex items-center gap-2 bg-blue-50/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-blue-200/50 animate-pulse">
                       <span className="text-sm text-blue-700">{filePreview.name}</span>
                       <button 
                         onClick={() => setFilePreview(null)} 
-                        className="text-blue-500 hover:text-red-500 transition-colors"
+                        className="text-blue-500 hover:text-red-500 transition-colors duration-300 hover:scale-110"
                         title="Remove file"
                       >
                         ×
@@ -912,7 +941,7 @@ export default function ChatPage() {
                   {!showSuggestions && messages.length > 0 && (
                     <button
                       onClick={() => setShowSuggestions(true)}
-                      className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50/80 rounded-lg transition-all duration-300 hover:scale-105"
                     >
                       Show suggestions
                     </button>
@@ -922,19 +951,29 @@ export default function ChatPage() {
             </div>
           </section>
 
-          <aside className="col-span-3">
-            <ChatHistory 
-              sessions={chatSessions}
-              currentSessionId={currentSessionId}
-              searchHistory={searchHistory}
-              setSearchHistory={setSearchHistory}
-              onLoadSession={loadSession}
-              onDeleteSession={deleteSession}
-              onNewSession={createNewSession}
-            />
+          {/* Sidebar with animation */}
+          <aside className={`col-span-3 ${getAnimationClass()}`} style={getAnimationStyle(150)}>
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 overflow-hidden">
+              <ChatHistory 
+                sessions={chatSessions}
+                currentSessionId={currentSessionId}
+                searchHistory={searchHistory}
+                setSearchHistory={setSearchHistory}
+                onLoadSession={loadSession}
+                onDeleteSession={deleteSession}
+                onNewSession={createNewSession}
+              />
+            </div>
           </aside>
         </main>
       </div>
+
+      {/* Loading overlay for initial animation */}
+      {!loaded && (
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      )}
     </div>
   );
 }
