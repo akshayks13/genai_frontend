@@ -1,26 +1,53 @@
-'use client';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowLeft, CheckCircle, Shield, RefreshCw, Key, Lock } from 'lucide-react';
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Mail,
+  ArrowLeft,
+  CheckCircle,
+  Shield,
+  RefreshCw,
+  Key,
+  Lock,
+} from "lucide-react";
+import { forgotPassword } from "@/lib/services/authApi";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const validate = () => {
+    if (!email) return "Email is required.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      return "Invalid email address.";
+    return "";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Password reset request for:', email);
-    setIsSubmitted(true);
+    try {
+      await forgotPassword({ email });
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err.message || "Failed to send reset link");
+    }
     setIsLoading(false);
   };
 
   const handleTryAgain = () => {
     setIsSubmitted(false);
-    setEmail('');
+    setEmail("");
+    setError("");
   };
 
   return (
@@ -56,13 +83,17 @@ export default function ForgotPasswordPage() {
                     Forgot your password?
                   </h1>
                   <p className="text-gray-600 text-lg leading-relaxed">
-                    No worries! Enter your email address and we'll send you a secure link to reset your password.
+                    No worries! Enter your email address and we'll send you a
+                    secure link to reset your password.
                   </p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-semibold text-gray-700"
+                    >
                       Email Address
                     </label>
                     <div className="relative">
@@ -79,8 +110,17 @@ export default function ForgotPasswordPage() {
                     </div>
                   </div>
 
+                  {error && (
+                    <div className="text-red-500 text-sm font-semibold text-center mb-2">
+                      {error}
+                    </div>
+                  )}
                   <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow:
+                        "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSubmit}
                     disabled={isLoading}
@@ -120,7 +160,12 @@ export default function ForgotPasswordPage() {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 200 }}
+                    transition={{
+                      delay: 0.2,
+                      duration: 0.5,
+                      type: "spring",
+                      stiffness: 200,
+                    }}
                     className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
                   >
                     <CheckCircle className="w-10 h-10 text-white" />
@@ -130,7 +175,7 @@ export default function ForgotPasswordPage() {
                   </h1>
                   <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6">
                     <p className="text-gray-700 text-lg leading-relaxed">
-                      We've sent a secure password reset link to{' '}
+                      We've sent a secure password reset link to{" "}
                       <span className="font-semibold text-green-700 bg-green-100 px-2 py-1 rounded-lg">
                         {email}
                       </span>
@@ -161,7 +206,7 @@ export default function ForgotPasswordPage() {
                   </div>
 
                   <p className="text-sm text-gray-500">
-                    Didn't receive the email?{' '}
+                    Didn't receive the email?{" "}
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -196,14 +241,14 @@ export default function ForgotPasswordPage() {
       >
         {/* Floating Elements Animation */}
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -10, 0],
-            rotate: [0, 5, 0]
+            rotate: [0, 5, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 4,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           className="absolute top-20 left-20"
         >
@@ -213,15 +258,15 @@ export default function ForgotPasswordPage() {
         </motion.div>
 
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, 15, 0],
-            rotate: [0, -8, 0]
+            rotate: [0, -8, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 3.5,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 1
+            delay: 1,
           }}
           className="absolute top-32 right-16"
         >
@@ -231,15 +276,15 @@ export default function ForgotPasswordPage() {
         </motion.div>
 
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -12, 0],
-            rotate: [0, 10, 0]
+            rotate: [0, 10, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 3.8,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 2
+            delay: 2,
           }}
           className="absolute bottom-32 left-16"
         >
@@ -260,133 +305,350 @@ export default function ForgotPasswordPage() {
             className="drop-shadow-2xl"
           >
             {/* Background Circle */}
-            <circle cx="225" cy="225" r="180" fill="url(#bgGradient)" opacity="0.1" />
-            
+            <circle
+              cx="225"
+              cy="225"
+              r="180"
+              fill="url(#bgGradient)"
+              opacity="0.1"
+            />
+
             {/* Email Envelope - Main Focus */}
             <motion.g
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              <rect x="150" y="200" width="150" height="100" rx="12" fill="#FFFFFF" stroke="url(#purpleGradient)" strokeWidth="3" />
-              <path d="M150 200 L225 250 L300 200" stroke="url(#purpleGradient)" strokeWidth="3" fill="none" />
-              
+              <rect
+                x="150"
+                y="200"
+                width="150"
+                height="100"
+                rx="12"
+                fill="#FFFFFF"
+                stroke="url(#purpleGradient)"
+                strokeWidth="3"
+              />
+              <path
+                d="M150 200 L225 250 L300 200"
+                stroke="url(#purpleGradient)"
+                strokeWidth="3"
+                fill="none"
+              />
+
               {/* Email content lines */}
-              <rect x="170" y="230" width="80" height="3" rx="1.5" fill="#E5E7EB" />
-              <rect x="170" y="240" width="100" height="3" rx="1.5" fill="#E5E7EB" />
-              <rect x="170" y="250" width="60" height="3" rx="1.5" fill="#E5E7EB" />
-              
+              <rect
+                x="170"
+                y="230"
+                width="80"
+                height="3"
+                rx="1.5"
+                fill="#E5E7EB"
+              />
+              <rect
+                x="170"
+                y="240"
+                width="100"
+                height="3"
+                rx="1.5"
+                fill="#E5E7EB"
+              />
+              <rect
+                x="170"
+                y="250"
+                width="60"
+                height="3"
+                rx="1.5"
+                fill="#E5E7EB"
+              />
+
               {/* Security shield icon on envelope */}
               <circle cx="260" cy="265" r="12" fill="url(#greenGradient)" />
-              <path d="M254 265 L258 269 L266 261" stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M254 265 L258 269 L266 261"
+                stroke="#FFFFFF"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </motion.g>
-            
+
             {/* Character - Professional Person */}
-            <circle cx="225" cy="120" r="35" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="3" />
-            
+            <circle
+              cx="225"
+              cy="120"
+              r="35"
+              fill="#FEF3C7"
+              stroke="#F59E0B"
+              strokeWidth="3"
+            />
+
             {/* Professional hairstyle */}
-            <path d="M195 95 Q225 70 255 95 Q245 75 225 75 Q205 75 195 95 Z" fill="#4F46E5" />
-            <path d="M200 90 Q225 80 250 90 L245 85 Q225 75 205 85 Z" fill="#6366F1" />
-            
+            <path
+              d="M195 95 Q225 70 255 95 Q245 75 225 75 Q205 75 195 95 Z"
+              fill="#4F46E5"
+            />
+            <path
+              d="M200 90 Q225 80 250 90 L245 85 Q225 75 205 85 Z"
+              fill="#6366F1"
+            />
+
             {/* Eyes with glasses */}
-            <circle cx="210" cy="115" r="18" fill="none" stroke="#374151" strokeWidth="2" />
-            <circle cx="240" cy="115" r="18" fill="none" stroke="#374151" strokeWidth="2" />
-            <line x1="228" y1="115" x2="232" y2="115" stroke="#374151" strokeWidth="2" />
+            <circle
+              cx="210"
+              cy="115"
+              r="18"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="2"
+            />
+            <circle
+              cx="240"
+              cy="115"
+              r="18"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="2"
+            />
+            <line
+              x1="228"
+              y1="115"
+              x2="232"
+              y2="115"
+              stroke="#374151"
+              strokeWidth="2"
+            />
             <circle cx="210" cy="115" r="3" fill="#1F2937" />
             <circle cx="240" cy="115" r="3" fill="#1F2937" />
-            
+
             {/* Confident smile */}
-            <path d="M205 135 Q225 145 245 135" stroke="#1F2937" strokeWidth="2" fill="none" />
-            
+            <path
+              d="M205 135 Q225 145 245 135"
+              stroke="#1F2937"
+              strokeWidth="2"
+              fill="none"
+            />
+
             {/* Body - Business attire */}
-            <rect x="200" y="155" width="50" height="70" rx="25" fill="#4F46E5" />
-            
+            <rect
+              x="200"
+              y="155"
+              width="50"
+              height="70"
+              rx="25"
+              fill="#4F46E5"
+            />
+
             {/* Arms in welcoming gesture */}
-            <ellipse cx="180" cy="185" rx="12" ry="20" fill="#FEF3C7" transform="rotate(-15 180 185)" />
-            <ellipse cx="270" cy="185" rx="12" ry="20" fill="#FEF3C7" transform="rotate(15 270 185)" />
-            
+            <ellipse
+              cx="180"
+              cy="185"
+              rx="12"
+              ry="20"
+              fill="#FEF3C7"
+              transform="rotate(-15 180 185)"
+            />
+            <ellipse
+              cx="270"
+              cy="185"
+              rx="12"
+              ry="20"
+              fill="#FEF3C7"
+              transform="rotate(15 270 185)"
+            />
+
             {/* Floating Security Elements */}
             <motion.g
-              animate={{ 
+              animate={{
                 rotate: [0, 360],
-                scale: [1, 1.1, 1]
+                scale: [1, 1.1, 1],
               }}
-              transition={{ 
+              transition={{
                 duration: 8,
                 repeat: Infinity,
-                ease: "linear"
+                ease: "linear",
               }}
             >
-              <circle cx="120" cy="160" r="25" fill="none" stroke="url(#purpleGradient)" strokeWidth="3" strokeDasharray="5,5" />
+              <circle
+                cx="120"
+                cy="160"
+                r="25"
+                fill="none"
+                stroke="url(#purpleGradient)"
+                strokeWidth="3"
+                strokeDasharray="5,5"
+              />
               <circle cx="120" cy="160" r="8" fill="url(#purpleGradient)" />
-              <path d="M116 160 L118 162 L124 156" stroke="#FFFFFF" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+              <path
+                d="M116 160 L118 162 L124 156"
+                stroke="#FFFFFF"
+                strokeWidth="1.5"
+                fill="none"
+                strokeLinecap="round"
+              />
             </motion.g>
-            
+
             <motion.g
-              animate={{ 
+              animate={{
                 rotate: [360, 0],
-                scale: [1, 1.2, 1]
+                scale: [1, 1.2, 1],
               }}
-              transition={{ 
+              transition={{
                 duration: 6,
                 repeat: Infinity,
-                ease: "linear"
+                ease: "linear",
               }}
             >
-              <circle cx="330" cy="180" r="20" fill="none" stroke="url(#greenGradient)" strokeWidth="3" strokeDasharray="3,3" />
-              <rect x="325" y="175" width="10" height="10" rx="2" fill="url(#greenGradient)" />
-              <path d="M328 178 L330 180 L332 178" stroke="#FFFFFF" strokeWidth="1" fill="none" strokeLinecap="round" />
+              <circle
+                cx="330"
+                cy="180"
+                r="20"
+                fill="none"
+                stroke="url(#greenGradient)"
+                strokeWidth="3"
+                strokeDasharray="3,3"
+              />
+              <rect
+                x="325"
+                y="175"
+                width="10"
+                height="10"
+                rx="2"
+                fill="url(#greenGradient)"
+              />
+              <path
+                d="M328 178 L330 180 L332 178"
+                stroke="#FFFFFF"
+                strokeWidth="1"
+                fill="none"
+                strokeLinecap="round"
+              />
             </motion.g>
-            
+
             {/* Password Reset Flow Visualization */}
             <motion.g
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               {/* Arrow from person to email */}
-              <path d="M245 140 Q280 160 260 180" stroke="url(#purpleGradient)" strokeWidth="3" fill="none" strokeDasharray="5,5" markerEnd="url(#arrowhead)" />
-              
+              <path
+                d="M245 140 Q280 160 260 180"
+                stroke="url(#purpleGradient)"
+                strokeWidth="3"
+                fill="none"
+                strokeDasharray="5,5"
+                markerEnd="url(#arrowhead)"
+              />
+
               {/* Arrow from email to lock */}
-              <path d="M300 240 Q350 260 320 300" stroke="url(#greenGradient)" strokeWidth="3" fill="none" strokeDasharray="5,5" markerEnd="url(#arrowhead2)" />
+              <path
+                d="M300 240 Q350 260 320 300"
+                stroke="url(#greenGradient)"
+                strokeWidth="3"
+                fill="none"
+                strokeDasharray="5,5"
+                markerEnd="url(#arrowhead2)"
+              />
             </motion.g>
-            
+
             {/* New Password Lock */}
             <motion.g
-              animate={{ 
+              animate={{
                 scale: [1, 1.1, 1],
-                rotate: [0, 5, 0]
+                rotate: [0, 5, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 3,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: 1
+                delay: 1,
               }}
             >
-              <rect x="290" y="320" width="60" height="40" rx="8" fill="url(#greenGradient)" />
-              <rect x="300" y="330" width="40" height="20" rx="4" fill="#FFFFFF" opacity="0.3" />
-              <circle cx="320" cy="300" r="15" fill="none" stroke="url(#greenGradient)" strokeWidth="4" />
+              <rect
+                x="290"
+                y="320"
+                width="60"
+                height="40"
+                rx="8"
+                fill="url(#greenGradient)"
+              />
+              <rect
+                x="300"
+                y="330"
+                width="40"
+                height="20"
+                rx="4"
+                fill="#FFFFFF"
+                opacity="0.3"
+              />
+              <circle
+                cx="320"
+                cy="300"
+                r="15"
+                fill="none"
+                stroke="url(#greenGradient)"
+                strokeWidth="4"
+              />
               <circle cx="320" cy="340" r="3" fill="#FFFFFF" />
             </motion.g>
-            
+
             {/* Floating Books - Security Themed */}
             <motion.g
               animate={{ y: [0, -8, 0], rotate: [0, 3, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              <rect x="80" y="100" width="40" height="30" rx="4" fill="url(#bookGradient1)" />
-              <rect x="85" y="105" width="30" height="20" rx="2" fill="rgba(255,255,255,0.3)" />
-              <path d="M90 115 L95 110 L105 115" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
+              <rect
+                x="80"
+                y="100"
+                width="40"
+                height="30"
+                rx="4"
+                fill="url(#bookGradient1)"
+              />
+              <rect
+                x="85"
+                y="105"
+                width="30"
+                height="20"
+                rx="2"
+                fill="rgba(255,255,255,0.3)"
+              />
+              <path
+                d="M90 115 L95 110 L105 115"
+                stroke="#FFFFFF"
+                strokeWidth="1.5"
+                fill="none"
+              />
             </motion.g>
-            
+
             <motion.g
               animate={{ y: [0, 10, 0], rotate: [0, -5, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
             >
-              <rect x="350" y="120" width="35" height="25" rx="3" fill="url(#bookGradient2)" />
-              <rect x="355" y="125" width="25" height="15" rx="2" fill="rgba(255,255,255,0.3)" />
+              <rect
+                x="350"
+                y="120"
+                width="35"
+                height="25"
+                rx="3"
+                fill="url(#bookGradient2)"
+              />
+              <rect
+                x="355"
+                y="125"
+                width="25"
+                height="15"
+                rx="2"
+                fill="rgba(255,255,255,0.3)"
+              />
               <circle cx="367" cy="132" r="3" fill="#FFFFFF" />
             </motion.g>
-            
+
             {/* Digital Sparkles */}
             <motion.g
               animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}
@@ -397,47 +659,89 @@ export default function ForgotPasswordPage() {
               <circle cx="60" cy="280" r="3.5" fill="#10B981" />
               <circle cx="380" cy="350" r="4" fill="#F59E0B" />
             </motion.g>
-            
+
             {/* Gradient Definitions */}
             <defs>
-              <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="bgGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#8B5CF6" />
                 <stop offset="100%" stopColor="#6366F1" />
               </linearGradient>
-              
-              <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="purpleGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#8B5CF6" />
                 <stop offset="100%" stopColor="#6366F1" />
               </linearGradient>
-              
-              <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="greenGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#10B981" />
                 <stop offset="100%" stopColor="#059669" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient1"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#8B5CF6" />
                 <stop offset="100%" stopColor="#7C3AED" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient2"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#EC4899" />
                 <stop offset="100%" stopColor="#DB2777" />
               </linearGradient>
-              
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-                      refX="9" refY="3.5" orient="auto">
+
+              <marker
+                id="arrowhead"
+                markerWidth="10"
+                markerHeight="7"
+                refX="9"
+                refY="3.5"
+                orient="auto"
+              >
                 <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6" />
               </marker>
-              
-              <marker id="arrowhead2" markerWidth="10" markerHeight="7" 
-                      refX="9" refY="3.5" orient="auto">
+
+              <marker
+                id="arrowhead2"
+                markerWidth="10"
+                markerHeight="7"
+                refX="9"
+                refY="3.5"
+                orient="auto"
+              >
                 <polygon points="0 0, 10 3.5, 0 7" fill="#10B981" />
               </marker>
             </defs>
           </motion.svg>
         </div>
-        
+
         {/* Enhanced Background Decoration */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-10 left-10 w-40 h-40 bg-gradient-to-br from-purple-300 to-indigo-400 rounded-full blur-3xl"></div>
@@ -448,8 +752,18 @@ export default function ForgotPasswordPage() {
         {/* Animated Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
           <svg width="100%" height="100%" className="absolute inset-0">
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#8B5CF6" strokeWidth="1"/>
+            <pattern
+              id="grid"
+              width="40"
+              height="40"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 40 0 L 0 0 0 40"
+                fill="none"
+                stroke="#8B5CF6"
+                strokeWidth="1"
+              />
             </pattern>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>

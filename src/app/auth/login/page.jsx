@@ -1,30 +1,59 @@
-'use client';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, BookOpen, Star, Heart, Zap } from 'lucide-react';
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  BookOpen,
+  Star,
+  Heart,
+  Zap,
+} from "lucide-react";
+import { loginUser } from "@/lib/services/authApi";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
+  };
+
+  const validate = () => {
+    if (!formData.email || !formData.password)
+      return "All fields are required.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email))
+      return "Invalid email address.";
+    return "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Login attempt:', formData);
+    try {
+      await loginUser(formData);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setError(err.message || "Login failed");
+    }
     setIsLoading(false);
   };
 
@@ -65,11 +94,14 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            onSubmit={handleSubmit} 
+            onSubmit={handleSubmit}
             className="space-y-6"
           >
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -88,7 +120,10 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700"
+              >
                 Password
               </label>
               <div className="relative">
@@ -108,7 +143,11 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -119,7 +158,9 @@ export default function LoginPage() {
                   type="checkbox"
                   className="h-5 w-5 text-sky-400 focus:ring-sky-400 border-gray-300 rounded transition-colors"
                 />
-                <span className="ml-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
+                <span className="ml-3 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+                  Remember me
+                </span>
               </label>
               <motion.a
                 whileHover={{ scale: 1.02 }}
@@ -129,9 +170,17 @@ export default function LoginPage() {
                 Forgot password?
               </motion.a>
             </div>
-
+            {error && (
+              <div className="text-red-500 text-sm font-semibold text-center mb-2">
+                {error}
+              </div>
+            )}
             <motion.button
-              whileHover={{ scale: 1.02, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+              whileHover={{
+                scale: 1.02,
+                boxShadow:
+                  "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
@@ -148,14 +197,14 @@ export default function LoginPage() {
             </motion.button>
           </motion.form>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
             className="mt-8 text-center"
           >
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <motion.a
                 whileHover={{ scale: 1.02 }}
                 href="/auth/signup"
@@ -177,14 +226,14 @@ export default function LoginPage() {
       >
         {/* Floating Elements Animation */}
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -10, 0],
-            rotate: [0, 5, 0]
+            rotate: [0, 5, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 4,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           className="absolute top-20 left-20"
         >
@@ -194,15 +243,15 @@ export default function LoginPage() {
         </motion.div>
 
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, 15, 0],
-            rotate: [0, -8, 0]
+            rotate: [0, -8, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 3.5,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 1
+            delay: 1,
           }}
           className="absolute top-32 right-16"
         >
@@ -212,15 +261,15 @@ export default function LoginPage() {
         </motion.div>
 
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -12, 0],
-            rotate: [0, 10, 0]
+            rotate: [0, 10, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 3.8,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 2
+            delay: 2,
           }}
           className="absolute bottom-32 left-16"
         >
@@ -241,84 +290,291 @@ export default function LoginPage() {
             className="drop-shadow-2xl"
           >
             {/* Background Circle */}
-            <circle cx="225" cy="225" r="180" fill="url(#bgGradient)" opacity="0.1" />
-            
+            <circle
+              cx="225"
+              cy="225"
+              r="180"
+              fill="url(#bgGradient)"
+              opacity="0.1"
+            />
+
             {/* Laptop */}
-            <rect x="140" y="280" width="170" height="110" rx="12" fill="#1F2937" />
-            <rect x="150" y="290" width="150" height="90" rx="6" fill="#111827" />
-            <rect x="155" y="295" width="140" height="80" rx="4" fill="#F8FAFC" />
-            
+            <rect
+              x="140"
+              y="280"
+              width="170"
+              height="110"
+              rx="12"
+              fill="#1F2937"
+            />
+            <rect
+              x="150"
+              y="290"
+              width="150"
+              height="90"
+              rx="6"
+              fill="#111827"
+            />
+            <rect
+              x="155"
+              y="295"
+              width="140"
+              height="80"
+              rx="4"
+              fill="#F8FAFC"
+            />
+
             {/* Laptop Screen Content - Digital Library */}
-            <rect x="165" y="305" width="120" height="6" rx="3" fill="#E5E7EB" />
-            <rect x="165" y="320" width="100" height="4" rx="2" fill="#D1D5DB" />
-            <rect x="165" y="330" width="110" height="4" rx="2" fill="#D1D5DB" />
+            <rect
+              x="165"
+              y="305"
+              width="120"
+              height="6"
+              rx="3"
+              fill="#E5E7EB"
+            />
+            <rect
+              x="165"
+              y="320"
+              width="100"
+              height="4"
+              rx="2"
+              fill="#D1D5DB"
+            />
+            <rect
+              x="165"
+              y="330"
+              width="110"
+              height="4"
+              rx="2"
+              fill="#D1D5DB"
+            />
             <rect x="165" y="340" width="85" height="4" rx="2" fill="#D1D5DB" />
-            
+
             {/* Book Icons on Screen */}
-            <rect x="270" y="305" width="12" height="16" rx="2" fill="#3B82F6" />
-            <rect x="270" y="325" width="12" height="16" rx="2" fill="#EF4444" />
-            <rect x="270" y="345" width="12" height="16" rx="2" fill="#10B981" />
-            
+            <rect
+              x="270"
+              y="305"
+              width="12"
+              height="16"
+              rx="2"
+              fill="#3B82F6"
+            />
+            <rect
+              x="270"
+              y="325"
+              width="12"
+              height="16"
+              rx="2"
+              fill="#EF4444"
+            />
+            <rect
+              x="270"
+              y="345"
+              width="12"
+              height="16"
+              rx="2"
+              fill="#10B981"
+            />
+
             {/* Laptop Base */}
-            <rect x="135" y="390" width="180" height="8" rx="4" fill="#374151" />
-            
+            <rect
+              x="135"
+              y="390"
+              width="180"
+              height="8"
+              rx="4"
+              fill="#374151"
+            />
+
             {/* Character - Modern Reader */}
-            <circle cx="225" cy="180" r="35" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="3" />
-            
+            <circle
+              cx="225"
+              cy="180"
+              r="35"
+              fill="#FEF3C7"
+              stroke="#F59E0B"
+              strokeWidth="3"
+            />
+
             {/* Modern Hair Style */}
-            <path d="M195 155 Q225 130 255 155 Q245 125 225 125 Q205 125 195 155 Z" fill="#8B5CF6" />
-            <path d="M200 150 Q225 140 250 150 L245 145 Q225 135 205 145 Z" fill="#A78BFA" />
-            
+            <path
+              d="M195 155 Q225 130 255 155 Q245 125 225 125 Q205 125 195 155 Z"
+              fill="#8B5CF6"
+            />
+            <path
+              d="M200 150 Q225 140 250 150 L245 145 Q225 135 205 145 Z"
+              fill="#A78BFA"
+            />
+
             {/* Eyes with Glasses */}
-            <circle cx="210" cy="175" r="18" fill="none" stroke="#374151" strokeWidth="2" />
-            <circle cx="240" cy="175" r="18" fill="none" stroke="#374151" strokeWidth="2" />
-            <line x1="228" y1="175" x2="232" y2="175" stroke="#374151" strokeWidth="2" />
+            <circle
+              cx="210"
+              cy="175"
+              r="18"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="2"
+            />
+            <circle
+              cx="240"
+              cy="175"
+              r="18"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="2"
+            />
+            <line
+              x1="228"
+              y1="175"
+              x2="232"
+              y2="175"
+              stroke="#374151"
+              strokeWidth="2"
+            />
             <circle cx="210" cy="175" r="3" fill="#1F2937" />
             <circle cx="240" cy="175" r="3" fill="#1F2937" />
-            
+
             {/* Smile */}
-            <path d="M205 195 Q225 210 245 195" stroke="#1F2937" strokeWidth="2" fill="none" />
-            
+            <path
+              d="M205 195 Q225 210 245 195"
+              stroke="#1F2937"
+              strokeWidth="2"
+              fill="none"
+            />
+
             {/* Body - Casual Style */}
-            <rect x="200" y="215" width="50" height="70" rx="25" fill="#6366F1" />
-            
+            <rect
+              x="200"
+              y="215"
+              width="50"
+              height="70"
+              rx="25"
+              fill="#6366F1"
+            />
+
             {/* Arms Typing */}
-            <ellipse cx="180" cy="245" rx="12" ry="20" fill="#FEF3C7" transform="rotate(-20 180 245)" />
-            <ellipse cx="270" cy="245" rx="12" ry="20" fill="#FEF3C7" transform="rotate(20 270 245)" />
-            
+            <ellipse
+              cx="180"
+              cy="245"
+              rx="12"
+              ry="20"
+              fill="#FEF3C7"
+              transform="rotate(-20 180 245)"
+            />
+            <ellipse
+              cx="270"
+              cy="245"
+              rx="12"
+              ry="20"
+              fill="#FEF3C7"
+              transform="rotate(20 270 245)"
+            />
+
             {/* Floating Digital Books */}
             <motion.g
               animate={{ y: [0, -8, 0], rotate: [0, 3, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              <rect x="80" y="120" width="45" height="35" rx="6" fill="url(#bookGradient1)" />
-              <rect x="85" y="125" width="35" height="25" rx="3" fill="rgba(255,255,255,0.3)" />
+              <rect
+                x="80"
+                y="120"
+                width="45"
+                height="35"
+                rx="6"
+                fill="url(#bookGradient1)"
+              />
+              <rect
+                x="85"
+                y="125"
+                width="35"
+                height="25"
+                rx="3"
+                fill="rgba(255,255,255,0.3)"
+              />
             </motion.g>
-            
+
             <motion.g
               animate={{ y: [0, 10, 0], rotate: [0, -5, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
             >
-              <rect x="320" y="140" width="40" height="30" rx="5" fill="url(#bookGradient2)" />
-              <rect x="325" y="145" width="30" height="20" rx="3" fill="rgba(255,255,255,0.3)" />
+              <rect
+                x="320"
+                y="140"
+                width="40"
+                height="30"
+                rx="5"
+                fill="url(#bookGradient2)"
+              />
+              <rect
+                x="325"
+                y="145"
+                width="30"
+                height="20"
+                rx="3"
+                fill="rgba(255,255,255,0.3)"
+              />
             </motion.g>
-            
+
             <motion.g
               animate={{ y: [0, -6, 0], rotate: [0, 4, 0] }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              transition={{
+                duration: 2.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2,
+              }}
             >
-              <rect x="70" y="320" width="35" height="28" rx="4" fill="url(#bookGradient3)" />
-              <rect x="75" y="325" width="25" height="18" rx="2" fill="rgba(255,255,255,0.3)" />
+              <rect
+                x="70"
+                y="320"
+                width="35"
+                height="28"
+                rx="4"
+                fill="url(#bookGradient3)"
+              />
+              <rect
+                x="75"
+                y="325"
+                width="25"
+                height="18"
+                rx="2"
+                fill="rgba(255,255,255,0.3)"
+              />
             </motion.g>
-            
+
             <motion.g
               animate={{ y: [0, 12, 0], rotate: [0, -3, 0] }}
-              transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              transition={{
+                duration: 4.2,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5,
+              }}
             >
-              <rect x="340" y="300" width="50" height="40" rx="6" fill="url(#bookGradient4)" />
-              <rect x="345" y="305" width="40" height="30" rx="4" fill="rgba(255,255,255,0.3)" />
+              <rect
+                x="340"
+                y="300"
+                width="50"
+                height="40"
+                rx="6"
+                fill="url(#bookGradient4)"
+              />
+              <rect
+                x="345"
+                y="305"
+                width="40"
+                height="30"
+                rx="4"
+                fill="rgba(255,255,255,0.3)"
+              />
             </motion.g>
-            
+
             {/* Digital Sparkles */}
             <motion.g
               animate={{ opacity: [0.4, 1, 0.4], scale: [0.8, 1.2, 0.8] }}
@@ -329,37 +585,67 @@ export default function LoginPage() {
               <circle cx="60" cy="200" r="3.5" fill="#10B981" />
               <circle cx="380" cy="380" r="4" fill="#8B5CF6" />
             </motion.g>
-            
+
             {/* Gradient Definitions */}
             <defs>
-              <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="bgGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#3B82F6" />
                 <stop offset="100%" stopColor="#8B5CF6" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient1"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#F59E0B" />
                 <stop offset="100%" stopColor="#D97706" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient2"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#EF4444" />
                 <stop offset="100%" stopColor="#DC2626" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient3"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#10B981" />
                 <stop offset="100%" stopColor="#059669" />
               </linearGradient>
-              
-              <linearGradient id="bookGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+
+              <linearGradient
+                id="bookGradient4"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stopColor="#8B5CF6" />
                 <stop offset="100%" stopColor="#7C3AED" />
               </linearGradient>
             </defs>
           </motion.svg>
         </div>
-        
+
         {/* Enhanced Background Decoration */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-10 left-10 w-40 h-40 bg-gradient-to-br from-sky-300 to-blue-400 rounded-full blur-3xl"></div>
@@ -370,8 +656,18 @@ export default function LoginPage() {
         {/* Animated Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
           <svg width="100%" height="100%" className="absolute inset-0">
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3B82F6" strokeWidth="1"/>
+            <pattern
+              id="grid"
+              width="40"
+              height="40"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 40 0 L 0 0 0 40"
+                fill="none"
+                stroke="#3B82F6"
+                strokeWidth="1"
+              />
             </pattern>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
