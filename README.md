@@ -35,7 +35,7 @@ Our engines are powered with premium-quality domestic and international data, re
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/akshayks13/genai_frontend
    cd genai_frontend
    ```
 
