@@ -1,6 +1,16 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { Plus, Calendar, Clock, Target, TrendingUp, Book, Award, X } from 'lucide-react';
+"use client";
+import { useState, useEffect } from "react";
+import AuthGuard from "@/components/AuthGuard";
+import {
+  Plus,
+  Calendar,
+  Clock,
+  Target,
+  TrendingUp,
+  Book,
+  Award,
+  X,
+} from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from "next/navigation";
 
@@ -9,28 +19,28 @@ const RoadmapDashboard = () => {
   const [roadmaps, setRoadmaps] = useState([
     {
       id: 1,
-      title: 'Full-Stack Developer',
-      description: 'Personalized path to become a Full-Stack Developer',
+      title: "Full-Stack Developer",
+      description: "Personalized path to become a Full-Stack Developer",
       progress: 35,
-      duration: '6 months',
-      startDate: '2024-01-01',
+      duration: "6 months",
+      startDate: "2024-01-01",
     },
     {
       id: 2,
-      title: 'Digital Marketing',
-      description: 'Comprehensive digital marketing and growth strategies',
+      title: "Digital Marketing",
+      description: "Comprehensive digital marketing and growth strategies",
       progress: 22,
-      duration: '4 months',
-      startDate: '2024-02-15',
+      duration: "4 months",
+      startDate: "2024-02-15",
     },
     {
       id: 3,
-      title: 'Photography Basics',
-      description: 'Learn the fundamentals of photography and editing',
+      title: "Photography Basics",
+      description: "Learn the fundamentals of photography and editing",
       progress: 78,
-      duration: '3 months',
-      startDate: '2023-09-01',
-    }
+      duration: "3 months",
+      startDate: "2023-09-01",
+    },
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -56,58 +66,78 @@ const RoadmapDashboard = () => {
     return () => clearTimeout(timeout);
   }, [roadmaps]);
 
-  const predefinedDurations = ['1 month', '2 months', '3 months', '4 months', '6 months', '8 months', '10 months', '12 months'];
+  const predefinedDurations = [
+    "1 month",
+    "2 months",
+    "3 months",
+    "4 months",
+    "6 months",
+    "8 months",
+    "10 months",
+    "12 months",
+  ];
 
   const handleAddRoadmap = () => {
     if (!newRoadmapTitle || !newRoadmapDuration) {
-      alert('Please enter course name and select duration.');
+      alert("Please enter course name and select duration.");
       return;
     }
 
     const roadmap = {
       id: roadmaps.length + 1,
       title: newRoadmapTitle,
-      description: newRoadmapDescription || 'No description provided',
+      description: newRoadmapDescription || "No description provided",
       progress: 0,
       duration: newRoadmapDuration,
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString().split("T")[0],
     };
 
     setRoadmaps([...roadmaps, roadmap]);
-    setNewRoadmapTitle('');
-    setNewRoadmapDescription('');
-    setNewRoadmapDuration('');
+    setNewRoadmapTitle("");
+    setNewRoadmapDescription("");
+    setNewRoadmapDuration("");
     setShowAddForm(false);
   };
 
-  const overallProgress = roadmaps.length > 0 ? Math.round(roadmaps.reduce((sum, r) => sum + r.progress, 0) / roadmaps.length) : 0;
-  const totalMonths = roadmaps.reduce((sum, r) => sum + parseInt(r.duration), 0);
-
-
+  const overallProgress =
+    roadmaps.length > 0
+      ? Math.round(
+          roadmaps.reduce((sum, r) => sum + r.progress, 0) / roadmaps.length
+        )
+      : 0;
+  const totalMonths = roadmaps.reduce(
+    (sum, r) => sum + parseInt(r.duration),
+    0
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mx-20">
-        {/* Header */}
-        <motion.div
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="mx-20">
+          {/* Header */}
+          <motion.div
           className="flex justify-between items-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Career Roadmaps</h1>
-            <p className="text-gray-600 mt-2">Track your learning journey across multiple paths</p>
-          </div>
-          {!showAddForm && (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={20} />
-              Add New Roadmap
-            </button>
-          )}
-        </motion.div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Career Roadmaps
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Track your learning journey across multiple paths
+              </p>
+            </div>
+            {!showAddForm && (
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={20} />
+                Add New Roadmap
+              </button>
+            )}
+          </motion.div>
 
         {/* Overall Stats */}
         <motion.div
@@ -349,6 +379,7 @@ const RoadmapDashboard = () => {
         )}
       </div>
     </div>
+    </AuthGuard>
   );
 };
 

@@ -308,14 +308,12 @@ function SetPasswordContent() {
         transition={{ delay: 0.3, duration: 0.8 }}
         className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 relative overflow-hidden"
       >
-        {/* ...existing code... */}
       </motion.div>
     </div>
   );
 }
 
 export default function SetPasswordPage() {
-  // Wrap the content that calls useSearchParams in a Suspense boundary per Next.js requirements
   return (
     <Suspense
       fallback={

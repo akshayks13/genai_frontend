@@ -1,6 +1,19 @@
-'use client';
+"use client";
 import { useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Upload, Send, Search, MessageSquare, Clock, Trash2, Download, Volume2, VolumeX } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
+import {
+  Mic,
+  MicOff,
+  Upload,
+  Send,
+  Search,
+  MessageSquare,
+  Clock,
+  Trash2,
+  Download,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
 function useTypewriter(text, speed = 30, setTyping = () => {}) {
   const [displayedText, setDisplayedText] = useState("");
@@ -25,144 +38,193 @@ function useTypewriter(text, speed = 30, setTyping = () => {}) {
 }
 
 const MODES = [
-  { id: "learning", label: "Learning Mode", desc: "Explain concepts, step-by-step." },
-  { id: "interview", label: "Interview Mode", desc: "Mock interviews & feedback." },
-  { id: "mentorship", label: "Mentorship Mode", desc: "Career advice & action steps." },
-  { id: "explore", label: "Exploration Mode", desc: "Discover role-options & hybrids." },
-  { id: "roadmap", label: "Roadmap Mode", desc: "Actionable milestones & timeline." },
+  {
+    id: "learning",
+    label: "Learning Mode",
+    desc: "Explain concepts, step-by-step.",
+  },
+  {
+    id: "interview",
+    label: "Interview Mode",
+    desc: "Mock interviews & feedback.",
+  },
+  {
+    id: "mentorship",
+    label: "Mentorship Mode",
+    desc: "Career advice & action steps.",
+  },
+  {
+    id: "explore",
+    label: "Exploration Mode",
+    desc: "Discover role-options & hybrids.",
+  },
+  {
+    id: "roadmap",
+    label: "Roadmap Mode",
+    desc: "Actionable milestones & timeline.",
+  },
 ];
 
 const MODE_SUGGESTIONS = {
   learning: [
     {
       title: "Explain Data Structures",
-      prompt: "Can you explain the most important data structures for software engineering interviews with examples?",
-      icon: "🧠"
+      prompt:
+        "Can you explain the most important data structures for software engineering interviews with examples?",
+      icon: "🧠",
     },
     {
       title: "System Design Basics",
-      prompt: "Walk me through the fundamentals of system design that I should know for tech interviews.",
-      icon: "⚙️"
+      prompt:
+        "Walk me through the fundamentals of system design that I should know for tech interviews.",
+      icon: "⚙️",
     },
     {
       title: "Algorithms Explained",
-      prompt: "Explain common algorithm patterns like two pointers, sliding window, and dynamic programming with examples.",
-      icon: "📊"
+      prompt:
+        "Explain common algorithm patterns like two pointers, sliding window, and dynamic programming with examples.",
+      icon: "📊",
     },
     {
       title: "Programming Languages",
-      prompt: "What are the key differences between Python, Java, and JavaScript for backend development?",
-      icon: "💻"
-    }
+      prompt:
+        "What are the key differences between Python, Java, and JavaScript for backend development?",
+      icon: "💻",
+    },
   ],
   interview: [
     {
       title: "Technical Interview Prep",
-      prompt: "Give me a mock technical interview question for a software engineer position and provide feedback on my approach.",
-      icon: "🎯"
+      prompt:
+        "Give me a mock technical interview question for a software engineer position and provide feedback on my approach.",
+      icon: "🎯",
     },
     {
       title: "Behavioral Questions",
-      prompt: "Ask me common behavioral interview questions and help me structure better STAR method responses.",
-      icon: "🗣️"
+      prompt:
+        "Ask me common behavioral interview questions and help me structure better STAR method responses.",
+      icon: "🗣️",
     },
     {
       title: "System Design Interview",
-      prompt: "Give me a system design interview question and guide me through the solution step by step.",
-      icon: "🏗️"
+      prompt:
+        "Give me a system design interview question and guide me through the solution step by step.",
+      icon: "🏗️",
     },
     {
       title: "Salary Negotiation",
-      prompt: "Help me practice salary negotiation scenarios and provide tips for discussing compensation.",
-      icon: "💰"
-    }
+      prompt:
+        "Help me practice salary negotiation scenarios and provide tips for discussing compensation.",
+      icon: "💰",
+    },
   ],
   mentorship: [
     {
       title: "Career Transition Plan",
-      prompt: "I want to transition from [current role] to [target role]. Help me create a detailed action plan.",
-      icon: "🚀"
+      prompt:
+        "I want to transition from [current role] to [target role]. Help me create a detailed action plan.",
+      icon: "🚀",
     },
     {
       title: "Skill Gap Analysis",
-      prompt: "Analyze my current skills and identify gaps I need to fill for my target role in tech.",
-      icon: "📈"
+      prompt:
+        "Analyze my current skills and identify gaps I need to fill for my target role in tech.",
+      icon: "📈",
     },
     {
       title: "Network Building",
-      prompt: "Give me actionable strategies to build a professional network in the tech industry.",
-      icon: "🤝"
+      prompt:
+        "Give me actionable strategies to build a professional network in the tech industry.",
+      icon: "🤝",
     },
     {
       title: "Personal Brand",
-      prompt: "Help me develop my personal brand and online presence for career advancement.",
-      icon: "✨"
-    }
+      prompt:
+        "Help me develop my personal brand and online presence for career advancement.",
+      icon: "✨",
+    },
   ],
   explore: [
     {
       title: "Tech Role Explorer",
-      prompt: "Show me different career paths in tech and help me understand which might fit my interests and skills.",
-      icon: "🔍"
+      prompt:
+        "Show me different career paths in tech and help me understand which might fit my interests and skills.",
+      icon: "🔍",
     },
     {
       title: "Emerging Technologies",
-      prompt: "What are the most promising emerging technology fields and career opportunities they offer?",
-      icon: "🌟"
+      prompt:
+        "What are the most promising emerging technology fields and career opportunities they offer?",
+      icon: "🌟",
     },
     {
       title: "Remote Work Options",
-      prompt: "Explore remote-friendly career paths and companies that offer flexible work arrangements.",
-      icon: "🌍"
+      prompt:
+        "Explore remote-friendly career paths and companies that offer flexible work arrangements.",
+      icon: "🌍",
     },
     {
       title: "Industry Comparison",
-      prompt: "Compare working at startups vs big tech companies vs consulting firms - pros and cons of each.",
-      icon: "⚖️"
-    }
+      prompt:
+        "Compare working at startups vs big tech companies vs consulting firms - pros and cons of each.",
+      icon: "⚖️",
+    },
   ],
   roadmap: [
     {
       title: "90-Day Career Plan",
-      prompt: "Create a detailed 90-day roadmap to improve my chances of landing a software engineer role.",
-      icon: "📅"
+      prompt:
+        "Create a detailed 90-day roadmap to improve my chances of landing a software engineer role.",
+      icon: "📅",
     },
     {
       title: "Learning Schedule",
-      prompt: "Design a weekly learning schedule to master full-stack development in 6 months.",
-      icon: "📚"
+      prompt:
+        "Design a weekly learning schedule to master full-stack development in 6 months.",
+      icon: "📚",
     },
     {
       title: "Project Portfolio",
-      prompt: "Help me plan and prioritize projects to build an impressive portfolio for job applications.",
-      icon: "📁"
+      prompt:
+        "Help me plan and prioritize projects to build an impressive portfolio for job applications.",
+      icon: "📁",
     },
     {
       title: "Certification Path",
-      prompt: "Recommend certifications and their timeline for advancing in cloud computing/data science/AI.",
-      icon: "🏆"
-    }
-  ]
+      prompt:
+        "Recommend certifications and their timeline for advancing in cloud computing/data science/AI.",
+      icon: "🏆",
+    },
+  ],
 };
 
-function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHistory, onLoadSession, onDeleteSession, onNewSession }) {
-  const [filterMode, setFilterMode] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+function ChatHistory({
+  sessions,
+  currentSessionId,
+  searchHistory,
+  setSearchHistory,
+  onLoadSession,
+  onDeleteSession,
+  onNewSession,
+}) {
+  const [filterMode, setFilterMode] = useState("all");
+  const [sortBy, setSortBy] = useState("date");
   const filteredSessions = sessions
-    .filter(session => {
+    .filter((session) => {
       // Search filter
-      const matchesSearch = !searchHistory ||
+      const matchesSearch =
+        !searchHistory ||
         session.title.toLowerCase().includes(searchHistory.toLowerCase()) ||
         session.preview.toLowerCase().includes(searchHistory.toLowerCase());
 
       // Mode filter
-      const matchesMode = filterMode === 'all' || session.mode === filterMode;
+      const matchesMode = filterMode === "all" || session.mode === filterMode;
 
       return matchesSearch && matchesMode;
     })
     .sort((a, b) => {
-      if (sortBy === 'date') return new Date(b.date) - new Date(a.date);
-      if (sortBy === 'messages') return b.messageCount - a.messageCount;
+      if (sortBy === "date") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "messages") return b.messageCount - a.messageCount;
       return a.title.localeCompare(b.title);
     });
 
@@ -171,33 +233,34 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
     const diff = now - new Date(date);
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
     if (days < 7) return `${days} days ago`;
     return new Date(date).toLocaleDateString();
   };
 
   const getModeColor = (mode) => {
     const colors = {
-      learning: 'bg-blue-100 text-blue-700',
-      interview: 'bg-green-100 text-green-700',
-      mentorship: 'bg-purple-100 text-purple-700',
-      explore: 'bg-orange-100 text-orange-700',
-      roadmap: 'bg-indigo-100 text-indigo-700'
+      learning: "bg-blue-100 text-blue-700",
+      interview: "bg-green-100 text-green-700",
+      mentorship: "bg-purple-100 text-purple-700",
+      explore: "bg-orange-100 text-orange-700",
+      roadmap: "bg-indigo-100 text-indigo-700",
     };
-    return colors[mode] || 'bg-gray-100 text-gray-700';
+    return colors[mode] || "bg-gray-100 text-gray-700";
   };
 
   const exportSession = (session) => {
-    const content = session.messages?.map(m =>
-      `${m.role.toUpperCase()}: ${m.text}`
-    ).join('\n\n') || 'No messages';
+    const content =
+      session.messages
+        ?.map((m) => `${m.role.toUpperCase()}: ${m.text}`)
+        .join("\n\n") || "No messages";
 
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${session.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    a.download = `${session.title.replace(/[^a-z0-9]/gi, "_")}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -221,7 +284,10 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
 
         {/* Search */}
         <div className="relative mb-4">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          />
           <input
             type="text"
             placeholder="Search conversations..."
@@ -239,8 +305,10 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
             className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white focus:ring-1 focus:ring-blue-500 outline-none"
           >
             <option value="all">All Modes</option>
-            {MODES.map(mode => (
-              <option key={mode.id} value={mode.id}>{mode.label}</option>
+            {MODES.map((mode) => (
+              <option key={mode.id} value={mode.id}>
+                {mode.label}
+              </option>
             ))}
           </select>
           <select
@@ -257,14 +325,16 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
 
       {/* Sessions List */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-        <div className="max-h-96 overflow-y-auto custom-scrollbar"> {/* Added custom-scrollbar class */}
+        <div className="max-h-96 overflow-y-auto custom-scrollbar">
+          {" "}
+          {/* Added custom-scrollbar class */}
           {filteredSessions.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
               <MessageSquare size={32} className="mx-auto mb-2 opacity-50" />
               <p className="text-sm">No conversations found</p>
               {searchHistory && (
                 <button
-                  onClick={() => setSearchHistory('')}
+                  onClick={() => setSearchHistory("")}
                   className="text-xs text-blue-600 mt-1 hover:underline"
                 >
                   Clear search
@@ -277,7 +347,9 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
                 <div
                   key={session.id}
                   className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    currentSessionId === session.id ? 'bg-blue-50 border-r-4 border-blue-500' : ''
+                    currentSessionId === session.id
+                      ? "bg-blue-50 border-r-4 border-blue-500"
+                      : ""
                   }`}
                   onClick={() => onLoadSession(session.id)}
                 >
@@ -310,8 +382,14 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
                   </div>
 
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${getModeColor(session.mode)}`}>
-                      {MODES.find(m => m.id === session.mode)?.label.split(' ')[0] || session.mode}
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getModeColor(
+                        session.mode
+                      )}`}
+                    >
+                      {MODES.find((m) => m.id === session.mode)?.label.split(
+                        " "
+                      )[0] || session.mode}
                     </span>
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                       <Clock size={12} className="opacity-70" />
@@ -342,7 +420,7 @@ function ChatHistory({ sessions, currentSessionId, searchHistory, setSearchHisto
 }
 
 function SuggestionCards({ mode, suggestions, onSuggestionClick }) {
-  const currentMode = MODES.find(m => m.id === mode);
+  const currentMode = MODES.find((m) => m.id === mode);
 
   return (
     <div className="mb-6">
@@ -351,7 +429,8 @@ function SuggestionCards({ mode, suggestions, onSuggestionClick }) {
           Welcome to {currentMode.label}!
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          {currentMode.desc} Explore the suggestions below or type your own query to get started.
+          {currentMode.desc} Explore the suggestions below or type your own
+          query to get started.
         </p>
       </div>
 
@@ -403,7 +482,7 @@ function ModeSelector({ mode, setMode }) {
             }
           `}
         >
-          {m.label.split(' ')[0]}
+          {m.label.split(" ")[0]}
         </button>
       ))}
     </div>
@@ -422,7 +501,8 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
       <div className="flex justify-end">
         <div className="max-w-[75%] bg-blue-600 text-white p-4 rounded-3xl rounded-br-lg shadow-md break-words">
           <div className="whitespace-pre-wrap">{typedText}</div>
-          {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+          {m.files &&
+            m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
         </div>
       </div>
     );
@@ -441,7 +521,8 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
             </button>
           </div>
           <div className="mt-3 space-y-2">
-            {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+            {m.files &&
+              m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
           </div>
         </div>
       </div>
@@ -453,13 +534,24 @@ function AttachmentPreview({ f }) {
   if (!f) return null;
 
   if (f.type && f.type.startsWith("image")) {
-    return <img src={f.url} alt={f.name} className="mt-3 max-h-48 w-full object-cover rounded-lg shadow-sm border border-gray-200" />;
+    return (
+      <img
+        src={f.url}
+        alt={f.name}
+        className="mt-3 max-h-48 w-full object-cover rounded-lg shadow-sm border border-gray-200"
+      />
+    );
   }
 
   if (f.type === "application/pdf" || (f.url && f.url.endsWith(".pdf"))) {
     return (
       <div className="mt-3 bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
-        <a href={f.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2">
+        <a
+          href={f.url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
+        >
           📄 {f.name || "View PDF"}
         </a>
         {/* <iframe src={f.url} className="w-full h-48 mt-2 border rounded" title={f.name}></iframe> */}
@@ -468,7 +560,12 @@ function AttachmentPreview({ f }) {
   }
 
   return (
-    <a href={f.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 mt-2">
+    <a
+      href={f.url}
+      target="_blank"
+      rel="noreferrer"
+      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 mt-2"
+    >
       🔗 {f.name || f.url}
     </a>
   );
@@ -824,7 +921,8 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen text-gray-800 p-2 font-sans">
+    <AuthGuard>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-800 p-2 font-sans">
       <div className="mx-5">
         {/* Header with animation */}
         <header className={`mb-10 flex flex-col items-center ${getAnimationClass()}`} style={getAnimationStyle(0)}>
@@ -975,5 +1073,6 @@ export default function ChatPage() {
         </div>
       )}
     </div>
+    </AuthGuard>
   );
 }
