@@ -25,6 +25,7 @@ import {
 import { useSession, signIn, signOut } from "next-auth/react";
 import { CalendarView } from "@/components/CalendarView";
 import AuthGuard from "@/components/AuthGuard";
+import { verifyToken, refreshToken } from "@/lib/services/authApi";
 
 const recentActivities = [
   {
@@ -112,12 +113,56 @@ const recommendations = [
 ];
 
 export default function DashboardPage() {
+  const [displayName, setDisplayName] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState("week");
   const { data: session, status } = useSession();
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const isAuthed = status === "authenticated";
+
+  useEffect(() => {
+    let cancelled = false;
+    if (typeof window !== "undefined") {
+      const n = localStorage.getItem("userName") || "";
+      if (!cancelled && n) setDisplayName(n);
+    }
+    async function resolveName() {
+      if (displayName) return;
+      try {
+        const res = await verifyToken({});
+        const data = res?.data?.data;
+        if (!cancelled && data?.name) {
+          setDisplayName(data.name);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("userName", data.name);
+            if (data.email) localStorage.setItem("userEmail", data.email);
+          }
+          return;
+        }
+      } catch (_) {
+        try {
+          const r = await refreshToken();
+          const newToken = r?.data?.token;
+          if (newToken && typeof window !== "undefined") {
+            localStorage.setItem("accessToken", newToken);
+            const res2 = await verifyToken({});
+            const data2 = res2?.data?.data;
+            if (!cancelled && data2?.name) {
+              setDisplayName(data2.name);
+              localStorage.setItem("userName", data2.name);
+              if (data2.email) localStorage.setItem("userEmail", data2.email);
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    resolveName();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isAuthed) return;
@@ -162,7 +207,7 @@ export default function DashboardPage() {
             className="mb-8"
           >
             <h1 className="text-3xl font-bold text-grey-900 mb-2">
-              Welcome back, Akshay KS!
+              {`Welcome back${displayName ? ", " + displayName : ""}!`}
             </h1>
             <p className="text-grey-600">
               Here's your career progress overview
