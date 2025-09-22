@@ -9,7 +9,7 @@ import { AuthProvider } from "./providers";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const hideLayout = pathname.startsWith("/auth");
+  const hideLayout = pathname.includes("/auth");
 
   return (
     <html lang="en" className="scroll-smooth">
