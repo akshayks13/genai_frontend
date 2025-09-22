@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { resetPassword, verifyTokenForgot } from "@/lib/services/authApi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 
-export default function SetPasswordPage() {
+function SetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -311,5 +311,26 @@ export default function SetPasswordPage() {
         {/* ...existing code... */}
       </motion.div>
     </div>
+  );
+}
+
+export default function SetPasswordPage() {
+  // Wrap the content that calls useSearchParams in a Suspense boundary per Next.js requirements
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 flex">
+          <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+            <div className="flex flex-col items-center justify-center min-h-[300px] text-center">
+              <RefreshCw className="w-8 h-8 animate-spin text-purple-500 mb-4" />
+              <div className="text-lg font-semibold text-gray-700">Loading...</div>
+            </div>
+          </div>
+          <div className="hidden lg:flex w-1/2 items-center justify-center bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 relative overflow-hidden" />
+        </div>
+      }
+    >
+      <SetPasswordContent />
+    </Suspense>
   );
 }
