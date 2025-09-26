@@ -84,12 +84,14 @@ export default function AuthGuard({ children }) {
         return false
       }
     }
-    const result = useAuth();
-    if (result === false) {
-      router.replace(
-        `/auth/login?next=${encodeURIComponent(pathname || "/")}`
-      );
-    }
+    useAuth().then((result) => {
+      console.log("Auth result:", result);
+      if (result === false) {
+        router.replace(
+          `/auth/login?next=${encodeURIComponent(pathname || "/")}`
+        );
+      }
+    });
     return () => {
       cancelled = true;
     };
