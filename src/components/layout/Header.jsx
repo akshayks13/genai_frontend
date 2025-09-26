@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { checkAuth } from '../AuthGuard';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: TrendingUp },
@@ -32,12 +33,17 @@ export default function Header(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const userMenuRef = useRef(null);
 
   // Close user menu when clicking outside
   useEffect(() => {
+    (async () => {
+      setIsAuth(await checkAuth());
+    })();
+    console.log("isAuth:", isAuth);
     function handleClickOutside(event) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setUserMenuOpen(false);
@@ -117,19 +123,31 @@ export default function Header(props) {
           <div className="flex items-center space-x-4">
             {/* Desktop user menu */}
             <div className="relative hidden md:flex" ref={userMenuRef}>
-              <button
-                aria-label="Open user menu"
-                aria-expanded={userMenuOpen}
-                onClick={() => setUserMenuOpen((s) => !s)}
-                className={cn(
-                  "inline-flex items-center justify-center p-2 rounded-lg transition-all duration-200",
-                  userMenuOpen 
-                    ? "bg-blue-50 text-blue-600 shadow-sm" 
-                    : "hover:bg-gray-100 text-gray-600"
-                )}
-              >
-                <User className="h-5 w-5" />
-              </button>
+              {isAuth ? (
+                <button
+                  aria-label="Open user menu"
+                  aria-expanded={userMenuOpen}
+                  onClick={() => setUserMenuOpen((s) => !s)}
+                  className={cn(
+                    "inline-flex items-center justify-center p-2 rounded-lg transition-all duration-200",
+                    userMenuOpen 
+                      ? "bg-blue-50 text-blue-600 shadow-sm" 
+                      : "hover:bg-gray-100 text-gray-600"
+                  )}
+                >
+                  <User className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  aria-label="Sign In"
+                  onClick={() => router.push('/auth/login')}
+                  className={cn(
+                    "inline-flex items-center justify-center p-2 rounded-lg transition-all duration-200 cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                  )}
+                >
+                  Sign In
+                </button>
+              )}
               
               {/* Improved Dropdown */}
               <AnimatePresence>

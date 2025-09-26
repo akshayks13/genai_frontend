@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AuthGuard from "@/components/AuthGuard";
 import { motion } from "framer-motion";
 import {
@@ -25,187 +25,193 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
+import { getOverview, getTrends } from "@/lib/services/trendsApi";
 
-const trendingSkills = [
-  {
-    name: "AI/Machine Learning",
-    growth: "+45%",
-    demand: "Very High",
-    salary: "$120k+",
-    color: "text-green-600",
-  },
-  {
-    name: "Cloud Computing",
-    growth: "+38%",
-    demand: "High",
-    salary: "$110k+",
-    color: "text-blue-600",
-  },
-  {
-    name: "Cybersecurity",
-    growth: "+35%",
-    demand: "High",
-    salary: "$115k+",
-    color: "text-red-600",
-  },
-  {
-    name: "DevOps/SRE",
-    growth: "+32%",
-    demand: "High",
-    salary: "$125k+",
-    color: "text-purple-600",
-  },
-  {
-    name: "Data Science",
-    growth: "+28%",
-    demand: "High",
-    salary: "$105k+",
-    color: "text-yellow-600",
-  },
-  {
-    name: "React/Frontend",
-    growth: "+25%",
-    demand: "Medium",
-    salary: "$95k+",
-    color: "text-blue-500",
-  },
-];
+// const trendingSkills = [
+//   {
+//     name: "AI/Machine Learning",
+//     growth: "+45%",
+//     demand: "Very High",
+//     salary: "$120k+",
+//     color: "text-green-600",
+//   },
+//   {
+//     name: "Cloud Computing",
+//     growth: "+38%",
+//     demand: "High",
+//     salary: "$110k+",
+//     color: "text-blue-600",
+//   },
+//   {
+//     name: "Cybersecurity",
+//     growth: "+35%",
+//     demand: "High",
+//     salary: "$115k+",
+//     color: "text-red-600",
+//   },
+//   {
+//     name: "DevOps/SRE",
+//     growth: "+32%",
+//     demand: "High",
+//     salary: "$125k+",
+//     color: "text-purple-600",
+//   },
+//   {
+//     name: "Data Science",
+//     growth: "+28%",
+//     demand: "High",
+//     salary: "$105k+",
+//     color: "text-yellow-600",
+//   },
+//   {
+//     name: "React/Frontend",
+//     growth: "+25%",
+//     demand: "Medium",
+//     salary: "$95k+",
+//     color: "text-blue-500",
+//   },
+// ];
 
-const industryNews = [
-  {
-    id: 1,
-    title: "OpenAI Announces GPT-5: What It Means for Developers",
-    source: "TechCrunch",
-    date: "2 hours ago",
-    category: "AI/ML",
-    impact: "High",
-    summary:
-      "New AI capabilities will reshape software development roles and create new opportunities.",
-    url: "#",
-  },
-  {
-    id: 2,
-    title: "Google Cloud Introduces New AI Development Tools",
-    source: "Google Cloud Blog",
-    date: "5 hours ago",
-    category: "Cloud",
-    impact: "Medium",
-    summary:
-      "Enhanced AI development platform aims to democratize machine learning.",
-    url: "#",
-  },
-  {
-    id: 3,
-    title: "Remote Work Policies: 2025 Industry Shifts",
-    source: "Harvard Business Review",
-    date: "1 day ago",
-    category: "Workplace",
-    impact: "High",
-    summary:
-      "Companies adapting hybrid models with focus on digital collaboration skills.",
-    url: "#",
-  },
-  {
-    id: 4,
-    title: "Cybersecurity Skills Gap Reaches Critical Levels",
-    source: "InfoSec Magazine",
-    date: "2 days ago",
-    category: "Security",
-    impact: "High",
-    summary: "Industry faces 3.5M unfilled cybersecurity positions globally.",
-    url: "#",
-  },
-];
+// const industryNews = [
+//   {
+//     id: 1,
+//     title: "OpenAI Announces GPT-5: What It Means for Developers",
+//     source: "TechCrunch",
+//     date: "2 hours ago",
+//     category: "AI/ML",
+//     impact: "High",
+//     summary:
+//       "New AI capabilities will reshape software development roles and create new opportunities.",
+//     url: "#",
+//   },
+//   {
+//     id: 2,
+//     title: "Google Cloud Introduces New AI Development Tools",
+//     source: "Google Cloud Blog",
+//     date: "5 hours ago",
+//     category: "Cloud",
+//     impact: "Medium",
+//     summary:
+//       "Enhanced AI development platform aims to democratize machine learning.",
+//     url: "#",
+//   },
+//   {
+//     id: 3,
+//     title: "Remote Work Policies: 2025 Industry Shifts",
+//     source: "Harvard Business Review",
+//     date: "1 day ago",
+//     category: "Workplace",
+//     impact: "High",
+//     summary:
+//       "Companies adapting hybrid models with focus on digital collaboration skills.",
+//     url: "#",
+//   },
+//   {
+//     id: 4,
+//     title: "Cybersecurity Skills Gap Reaches Critical Levels",
+//     source: "InfoSec Magazine",
+//     date: "2 days ago",
+//     category: "Security",
+//     impact: "High",
+//     summary: "Industry faces 3.5M unfilled cybersecurity positions globally.",
+//     url: "#",
+//   },
+// ];
 
-const governmentPolicies = [
-  {
-    title: "EU AI Act Implementation",
-    region: "European Union",
-    status: "Active",
-    impact: "High",
-    description:
-      "New regulations for AI development and deployment affecting tech careers.",
-    deadline: "August 2025",
-    relevantRoles: ["AI Engineer", "Data Scientist", "Compliance Officer"],
-  },
-  {
-    title: "US CHIPS and Science Act",
-    region: "United States",
-    status: "Funding Available",
-    impact: "Medium",
-    description:
-      "Investment in semiconductor research creating new engineering opportunities.",
-    deadline: "Ongoing",
-    relevantRoles: [
-      "Hardware Engineer",
-      "Research Scientist",
-      "Manufacturing Engineer",
-    ],
-  },
-  {
-    title: "Digital Services Act",
-    region: "European Union",
-    status: "Compliance Required",
-    impact: "Medium",
-    description:
-      "Platform accountability requirements creating demand for digital governance roles.",
-    deadline: "February 2025",
-    relevantRoles: ["Product Manager", "Legal Tech", "Content Moderator"],
-  },
-];
+// const governmentPolicies = [
+//   {
+//     title: "EU AI Act Implementation",
+//     region: "European Union",
+//     status: "Active",
+//     impact: "High",
+//     description:
+//       "New regulations for AI development and deployment affecting tech careers.",
+//     deadline: "August 2025",
+//     relevantRoles: ["AI Engineer", "Data Scientist", "Compliance Officer"],
+//   },
+//   {
+//     title: "US CHIPS and Science Act",
+//     region: "United States",
+//     status: "Funding Available",
+//     impact: "Medium",
+//     description:
+//       "Investment in semiconductor research creating new engineering opportunities.",
+//     deadline: "Ongoing",
+//     relevantRoles: [
+//       "Hardware Engineer",
+//       "Research Scientist",
+//       "Manufacturing Engineer",
+//     ],
+//   },
+//   {
+//     title: "Digital Services Act",
+//     region: "European Union",
+//     status: "Compliance Required",
+//     impact: "Medium",
+//     description:
+//       "Platform accountability requirements creating demand for digital governance roles.",
+//     deadline: "February 2025",
+//     relevantRoles: ["Product Manager", "Legal Tech", "Content Moderator"],
+//   },
+// ];
 
-const marketInsights = [
-  {
-    category: "Job Market",
-    metrics: [
-      {
-        label: "Tech Job Growth",
-        value: "13%",
-        trend: "up",
-        description: "Year-over-year increase",
-      },
-      {
-        label: "Remote Positions",
-        value: "42%",
-        trend: "up",
-        description: "Of all tech jobs",
-      },
-      {
-        label: "Avg. Time to Hire",
-        value: "23 days",
-        trend: "down",
-        description: "For skilled developers",
-      },
-    ],
-  },
-  {
-    category: "Salary Trends",
-    metrics: [
-      {
-        label: "Junior Dev Avg.",
-        value: "$75k",
-        trend: "up",
-        description: "Entry-level positions",
-      },
-      {
-        label: "Senior Dev Avg.",
-        value: "$145k",
-        trend: "up",
-        description: "5+ years experience",
-      },
-      {
-        label: "AI Specialist Avg.",
-        value: "$165k",
-        trend: "up",
-        description: "Machine learning focus",
-      },
-    ],
-  },
-];
+// const marketInsights = [
+//   {
+//     category: "Job Market",
+//     metrics: [
+//       {
+//         label: "Tech Job Growth",
+//         value: "13%",
+//         trend: "up",
+//         description: "Year-over-year increase",
+//       },
+//       {
+//         label: "Remote Positions",
+//         value: "42%",
+//         trend: "up",
+//         description: "Of all tech jobs",
+//       },
+//       {
+//         label: "Avg. Time to Hire",
+//         value: "23 days",
+//         trend: "down",
+//         description: "For skilled developers",
+//       },
+//     ],
+//   },
+//   {
+//     category: "Salary Trends",
+//     metrics: [
+//       {
+//         label: "Junior Dev Avg.",
+//         value: "$75k",
+//         trend: "up",
+//         description: "Entry-level positions",
+//       },
+//       {
+//         label: "Senior Dev Avg.",
+//         value: "$145k",
+//         trend: "up",
+//         description: "5+ years experience",
+//       },
+//       {
+//         label: "AI Specialist Avg.",
+//         value: "$165k",
+//         trend: "up",
+//         description: "Machine learning focus",
+//       },
+//     ],
+//   },
+// ];
 
 export default function TrendsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [timeframe, setTimeframe] = useState("week");
+  const [skillsCards, setSkillsCards] = useState([]);
+  const [newsItems, setNewsItems] = useState([]);
+  const [policies, setPolicies] = useState([]);
+  const [insights, setInsights] = useState([]);
+  const [emergingTech, setEmergingTech] = useState([]);
 
   const categories = [
     "all",
@@ -216,12 +222,151 @@ export default function TrendsPage() {
     "Backend",
   ];
 
-  const filteredNews =
-    selectedCategory === "all"
-      ? industryNews
-      : industryNews.filter((news) =>
-          news.category.toLowerCase().includes(selectedCategory.toLowerCase())
-        );
+  const filteredNews = useMemo(() => {
+    if (selectedCategory === "all") return newsItems;
+    return newsItems.filter((news) =>
+      (news.category || "")
+        .toLowerCase()
+        .includes(selectedCategory.toLowerCase())
+    );
+  }, [newsItems, selectedCategory]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const [trendsResp, overviewResp] = await Promise.all([
+          getTrends({ days: 7, limit: 5 }).catch(() => ({ data: { success: false } })),
+          getOverview({ days: 7, limit: 3 }).catch(() => ({
+            data: { success: false },
+          })),
+        ]);
+
+        const trendsRes = trendsResp?.data;
+        const overviewRes = overviewResp?.data;
+
+        console.log("Trends Response:", overviewRes);
+
+        if (!cancelled && trendsRes && trendsRes.success) {
+          const cards = Array.isArray(trendsRes.cards) ? trendsRes.cards : [];
+          const mapped = cards.map((block) => {
+            const lines = String(block)
+              .split(/\n/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            const name = lines[0] || "";
+            const growth = (lines[1] || "+0%").replace(/^\+?/, "+");
+            const demandIdx = lines.findIndex((l) =>
+              l.toLowerCase().startsWith("demand")
+            );
+            const demand =
+              (demandIdx >= 0 ? lines[demandIdx + 1] || "" : "").trim() ||
+              "Medium";
+            const salaryIdx = lines.findIndex((l) =>
+              l.toLowerCase().startsWith("avg. salary")
+            );
+            const salary =
+              (salaryIdx >= 0 ? lines[salaryIdx + 1] || "" : "").trim() ||
+              "₹100k+";
+            const color = growth.includes("-")
+              ? "text-red-600"
+              : "text-green-600";
+            return { name, growth, demand, salary, color };
+          });
+          setSkillsCards(mapped);
+        }
+
+        if (
+          !cancelled &&
+          overviewRes &&
+          overviewRes.success &&
+          overviewRes.overview
+        ) {
+          const ov = overviewRes.overview;
+
+          const news = Array.isArray(ov.industryNews?.personalized)
+            ? ov.industryNews.personalized
+            : [];
+          const normalizedNews = news.map((n, idx) => ({
+            id: n.id || idx,
+            title: n.title || n.headline || "",
+            source: n.source || n.publisher || "",
+            date: n.publishedAt || n.date || "",
+            category: n.category || (n.tags && n.tags[0]) || "General",
+            impact: n.impact || "Medium",
+            summary: n.summary || n.description || "",
+            url: n.url || "#",
+          }));
+          setNewsItems(normalizedNews);
+
+          const gp = Array.isArray(ov.governmentPoliciesAndRegulations)
+            ? ov.governmentPoliciesAndRegulations
+            : [];
+          const normalizedPolicies = gp.map((p) => ({
+            title: p.title || p.name || "",
+            region: p.region || p.country || "",
+            status: p.status || "Active",
+            impact: p.impact || "Medium",
+            description: p.description || "",
+            deadline: p.deadline || p.date || "",
+            relevantRoles: Array.isArray(p.relevantRoles)
+              ? p.relevantRoles
+              : [],
+          }));
+          setPolicies(normalizedPolicies);
+
+          const ms = ov.marketInsights || {};
+          const metrics = [];
+          if (Array.isArray(ms.topSources) && ms.topSources.length) {
+            metrics.push({
+              category: "Top Sources",
+              metrics: ms.topSources.slice(0, 3).map((s) => ({
+                label: s.source || s.name || "Source",
+                value: String(s.count || s.mentions || "-"),
+                trend: "up",
+                description: "Article mentions",
+              })),
+            });
+          }
+          if (Array.isArray(ms.volumeByDay) && ms.volumeByDay.length) {
+            const last = ms.volumeByDay[ms.volumeByDay.length - 1]?.count || 0;
+            const prev =
+              ms.volumeByDay[ms.volumeByDay.length - 2]?.count || last;
+            const up = Number(last) >= Number(prev);
+            metrics.push({
+              category: "Volume",
+              metrics: [
+                {
+                  label: "Articles Today",
+                  value: String(last),
+                  trend: up ? "up" : "down",
+                  description: "Compared to previous day",
+                },
+              ],
+            });
+          }
+          setInsights(metrics);
+
+          const et = Array.isArray(ov.emergingTechnologies)
+            ? ov.emergingTechnologies
+            : [];
+          const normalizedEt = et.slice(0, 5).map((t) => ({
+            name: t.name || t.title || "",
+            growth: t.stage || t.growth || "Emerging",
+            icon: "✨",
+          }));
+          setEmergingTech(normalizedEt);
+        }
+      } finally {
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <AuthGuard>
@@ -261,7 +406,7 @@ export default function TrendsPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {trendingSkills.map((skill, index) => (
+                  {skillsCards.map((skill, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -317,7 +462,7 @@ export default function TrendsPage() {
                           Latest developments affecting tech careers
                         </CardDescription>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      {/* <div className="flex items-center space-x-2">
                         <select
                           value={selectedCategory}
                           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -329,7 +474,7 @@ export default function TrendsPage() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </div> */}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -378,14 +523,14 @@ export default function TrendsPage() {
                             <span className="text-xs text-grey-500">
                               {news.source}
                             </span>
-                            <Button
+                            {/* <Button
                               variant="ghost"
                               size="sm"
                               className="text-blue-600"
                             >
                               Read More
                               <ExternalLink className="h-3 w-3 ml-1" />
-                            </Button>
+                            </Button> */}
                           </div>
                         </div>
                       ))}
@@ -412,7 +557,7 @@ export default function TrendsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {governmentPolicies.map((policy, index) => (
+                      {policies.map((policy, index) => (
                         <div
                           key={index}
                           className="border border-grey-200 rounded-lg p-4"
@@ -482,7 +627,7 @@ export default function TrendsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {marketInsights.map((insight, index) => (
+                      {insights.map((insight, index) => (
                         <div key={index}>
                           <h4 className="font-medium text-grey-900 mb-3">
                             {insight.category}

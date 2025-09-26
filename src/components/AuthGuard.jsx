@@ -5,6 +5,41 @@ import { usePathname, useRouter } from "next/navigation";
 import { refreshToken } from "@/lib/services/authApi";
 import { getUserProfile } from "@/lib/services/profileApi";
 
+export async function checkAuth() {
+  try {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
+    if (token) {
+      try {
+        await getUserProfile();
+        return true;
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status !== 401 && status !== 403) {
+          return true;
+        }
+      }
+    }
+
+    const res = await refreshToken();
+    if (res?.status !== 200) {
+      return false
+    }
+    const newToken = res?.data?.token;
+    if (newToken && typeof window !== "undefined") {
+      localStorage.setItem("accessToken", newToken);
+      return true;
+    }
+    console.log("No new token");
+    return false
+  } catch (e) {
+    console.log("Auth check error:", e);
+    return false
+  }
+}
+
 export default function AuthGuard({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -12,7 +47,7 @@ export default function AuthGuard({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-    async function checkAuth() {
+    async function useAuth() {
       try {
         const token =
           typeof window !== "undefined"
@@ -22,35 +57,39 @@ export default function AuthGuard({ children }) {
           try {
             await getUserProfile();
             if (!cancelled) setChecking(false);
-            return;
+            return true;
           } catch (err) {
             const status = err?.response?.status;
             if (status !== 401 && status !== 403) {
               if (!cancelled) setChecking(false);
-              return;
+              return true;
             }
           }
         }
 
         const res = await refreshToken();
+        if (res?.status !== 200) {
+          return false
+        }
         const newToken = res?.data?.token;
         if (newToken && typeof window !== "undefined") {
           localStorage.setItem("accessToken", newToken);
           if (!cancelled) setChecking(false);
-          return;
+          return true;
         }
-
-        router.replace(
-          `/auth/login?next=${encodeURIComponent(pathname || "/")}`
-        );
+        console.log("No new token");
+        return false
       } catch (e) {
-        router.replace(
-          `/auth/login?next=${encodeURIComponent(pathname || "/")}`
-        );
-        return;
+        console.log("Auth check error:", e);
+        return false
       }
     }
-    checkAuth();
+    const result = useAuth();
+    if (result === false) {
+      router.replace(
+        `/auth/login?next=${encodeURIComponent(pathname || "/")}`
+      );
+    }
     return () => {
       cancelled = true;
     };
