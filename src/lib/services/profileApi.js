@@ -12,3 +12,5 @@ export const getUserProfile = () =>
 export const updateUserProfile = (data) =>
 	apiClient.patch("/profile/user", data, { headers: getAuthHeaders() });
 
+export const getDashboardData = () =>
+	apiClient.get("/profile/dashboard", { headers: getAuthHeaders() });

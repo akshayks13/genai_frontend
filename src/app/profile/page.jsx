@@ -46,53 +46,11 @@ import {
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import AuthGuard from "@/components/AuthGuard";
-import { getUserProfile, updateUserProfile } from "@/lib/services/profileApi";
-
-const resumeData = {
-  score: 85,
-  lastUpdated: "2024-01-15",
-  fileName: "akshayks_Resume.pdf",
-  suggestions: [
-    {
-      type: "improvement",
-      title: "Add quantifiable achievements",
-      description:
-        "Include specific metrics and numbers to showcase your impact",
-      priority: "high",
-    },
-    {
-      type: "missing",
-      title: "Add certifications section",
-      description: "Showcase your professional certifications and courses",
-      priority: "medium",
-    },
-    {
-      type: "enhancement",
-      title: "Optimize keywords",
-      description:
-        "Include more industry-relevant keywords for ATS compatibility",
-      priority: "medium",
-    },
-    {
-      type: "formatting",
-      title: "Improve visual hierarchy",
-      description: "Use better spacing and typography to enhance readability",
-      priority: "low",
-    },
-  ],
-  analysis: {
-    strengths: [
-      "Strong technical skills",
-      "Clear experience progression",
-      "Good education background",
-    ],
-    weaknesses: [
-      "Missing quantifiable achievements",
-      "No certifications listed",
-      "Could use more keywords",
-    ],
-  },
-};
+import {
+  getUserProfile,
+  updateUserProfile,
+  getDashboardData,
+} from "@/lib/services/profileApi";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("personal");
@@ -122,7 +80,20 @@ export default function ProfilePage() {
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [isProcessingResume, setIsProcessingResume] = useState(false);
   const [uploadedResume, setUploadedResume] = useState(null);
-  const [resumeFileName, setResumeFileName] = useState(resumeData.fileName);
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [profileCompleteness, setProfileCompleteness] = useState(0);
+  const [loadingCompleteness, setLoadingCompleteness] = useState(true);
+  const [resumeData, setResumeData] = useState({
+    score: 0,
+    lastUpdated: "",
+    fileName: "",
+    suggestions: [],
+    analysis: {
+      strengths: [],
+      weaknesses: [],
+    },
+  });
+  const [loadingResume, setLoadingResume] = useState(true);
   const fileInputRef = useRef(null);
 
   const tabs = [
@@ -142,6 +113,8 @@ export default function ProfilePage() {
         if (userEmail) payload.email = userEmail;
       }
       await updateUserProfile(payload);
+      void fetchProfile();
+      void fetchProfileCompleteness(); // Refresh completeness after save
       setIsEditing(false);
     } catch (e) {
       setError(e.message || "Failed to update profile");
@@ -149,7 +122,6 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
-    void fetchProfile();
     setIsEditing(false);
   };
 
@@ -182,28 +154,153 @@ export default function ProfilePage() {
     });
   };
 
-  const handleUploadResume = () => {
+  const handleUploadResume = async () => {
     setIsProcessingResume(true);
-    setTimeout(() => {
-      setIsProcessingResume(false);
+    try {
+      // Simulate processing time
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Generate mock analysis data
+      const newResumeData = {
+        score: 78,
+        lastUpdated: new Date().toISOString(),
+        fileName: resumeFileName,
+        suggestions: [
+          {
+            type: "improvement",
+            title: "Add quantifiable achievements",
+            description:
+              "Include specific metrics and numbers to showcase your impact",
+            priority: "high",
+          },
+          {
+            type: "enhancement",
+            title: "Optimize keywords",
+            description:
+              "Include more industry-relevant keywords for ATS compatibility",
+            priority: "medium",
+          },
+        ],
+        analysis: {
+          strengths: [
+            "Strong technical skills",
+            "Clear experience progression",
+          ],
+          weaknesses: [
+            "Missing quantifiable achievements",
+            "Could use more keywords",
+          ],
+        },
+      };
+
+      // Update backend with new resume data
+      const payload = {
+        email: editData.email || localStorage.getItem("userEmail"),
+        resume: newResumeData,
+      };
+
+      await updateUserProfile(payload);
+      setResumeData(newResumeData);
       alert("Resume uploaded and analyzed successfully!");
-    }, 2000);
+    } catch (error) {
+      console.error("Resume upload error:", error);
+      alert("Failed to upload resume. Please try again.");
+    } finally {
+      setIsProcessingResume(false);
+    }
   };
 
-  const handleGenerateResume = () => {
+  const handleGenerateResume = async () => {
     setIsProcessingResume(true);
-    setTimeout(() => {
-      setIsProcessingResume(false);
+    try {
+      // Simulate AI generation time
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // Generate resume data based on profile
+      const generatedResumeData = {
+        score: 85,
+        lastUpdated: new Date().toISOString(),
+        fileName: `${
+          editData.name?.replace(/\s+/g, "_") || "user"
+        }_AI_Resume.pdf`,
+        suggestions: [
+          {
+            type: "enhancement",
+            title: "Add more project details",
+            description:
+              "Include specific technologies and outcomes for your projects",
+            priority: "medium",
+          },
+        ],
+        analysis: {
+          strengths: [
+            "Well-structured content",
+            "AI-optimized format",
+            "ATS-friendly",
+          ],
+          weaknesses: [
+            "Could add more project details",
+            "Consider adding certifications",
+          ],
+        },
+      };
+
+      // Update backend
+      const payload = {
+        email: editData.email || localStorage.getItem("userEmail"),
+        resume: generatedResumeData,
+      };
+
+      await updateUserProfile(payload);
+      setResumeData(generatedResumeData);
+      setResumeFileName(generatedResumeData.fileName);
       alert("AI-generated resume created successfully!");
-    }, 3000);
+    } catch (error) {
+      console.error("Resume generation error:", error);
+      alert("Failed to generate resume. Please try again.");
+    } finally {
+      setIsProcessingResume(false);
+    }
   };
 
-  const handleEnhanceResume = () => {
+  const handleEnhanceResume = async () => {
     setIsProcessingResume(true);
-    setTimeout(() => {
-      setIsProcessingResume(false);
+    try {
+      // Simulate enhancement time
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
+      // Enhance existing resume data
+      const enhancedResumeData = {
+        ...resumeData,
+        score: Math.min(100, resumeData.score + 10),
+        lastUpdated: new Date().toISOString(),
+        suggestions: resumeData.suggestions.map((s) => ({
+          ...s,
+          priority: s.priority === "high" ? "medium" : s.priority,
+        })),
+        analysis: {
+          strengths: [...resumeData.analysis.strengths, "AI-enhanced content"],
+          weaknesses: resumeData.analysis.weaknesses.filter(
+            (_, index) => index !== 0
+          ), // Remove first weakness
+        },
+      };
+
+      // Update backend
+      const payload = {
+        email: editData.email || localStorage.getItem("userEmail"),
+        resume: enhancedResumeData,
+      };
+
+      await updateUserProfile(payload);
+      setResumeData(enhancedResumeData);
       alert("Resume enhanced with AI suggestions!");
-    }, 2500);
+    } catch (error) {
+      console.error("Resume enhancement error:", error);
+      alert("Failed to enhance resume. Please try again.");
+    } finally {
+      setIsProcessingResume(false);
+    }
   };
 
   async function fetchProfile() {
@@ -242,15 +339,47 @@ export default function ProfilePage() {
         },
       };
       setEditData(normalized);
+
+      // Set resume data from backend
+      if (data.resume) {
+        setResumeData({
+          score: data.resume.score || 0,
+          lastUpdated: data.resume.lastUpdated || "",
+          fileName: data.resume.fileName || "",
+          suggestions: data.resume.suggestions || [],
+          analysis: {
+            strengths: data.resume.analysis?.strengths || [],
+            weaknesses: data.resume.analysis?.weaknesses || [],
+          },
+        });
+        setResumeFileName(data.resume.fileName || "");
+      }
+      setLoadingResume(false);
     } catch (e) {
       setError(e.message || "Failed to load profile");
+      setLoadingResume(false);
     } finally {
       setLoading(false);
     }
   }
 
+  async function fetchProfileCompleteness() {
+    try {
+      setLoadingCompleteness(true);
+      const response = await getDashboardData();
+      if (response?.data?.success) {
+        setProfileCompleteness(response.data.data.profileCompleteness || 0);
+      }
+    } catch (e) {
+      console.error("Failed to fetch profile completeness:", e);
+    } finally {
+      setLoadingCompleteness(false);
+    }
+  }
+
   useEffect(() => {
     fetchProfile();
+    fetchProfileCompleteness();
   }, []);
 
   const ScoreCircle = ({ score }) => {
@@ -371,17 +500,24 @@ export default function ProfilePage() {
                 )}
                 {isEditing ? (
                   <>
-                    <Button variant="outlined" onClick={handleCancel}>
+                    <Button
+                      className="cursor-pointer"
+                      variant="outlined"
+                      onClick={handleCancel}
+                    >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
                     </Button>
-                    <Button onClick={handleSave}>
+                    <Button className="cursor-pointer" onClick={handleSave}>
                       <Save className="h-4 w-4 mr-2" />
                       Save Changes
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setIsEditing(true)}>
+                  <Button
+                    className="cursor-pointer"
+                    onClick={() => setIsEditing(true)}
+                  >
                     <Edit3 className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
@@ -400,13 +536,13 @@ export default function ProfilePage() {
             {/* Sidebar Navigation */}
             <div className="lg:col-span-1">
               <Card>
-                <CardContent className="p-0">
+                <CardContent className="pt-4">
                   <nav className="space-y-1">
                     {tabs.map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                        className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                           activeTab === tab.id
                             ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
                             : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -421,31 +557,42 @@ export default function ProfilePage() {
               </Card>
 
               {/* Quick Stats */}
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Strength</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Completeness</span>
-                        <span>85%</span>
+              {profileCompleteness !== 100 && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Profile Strength</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Completeness</span>
+                          <span>
+                            {loadingCompleteness
+                              ? "..."
+                              : `${profileCompleteness}%`}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${profileCompleteness}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: "85%" }}
-                        ></div>
+                      <div className="text-xs text-gray-600">
+                        {profileCompleteness < 50
+                          ? "Complete your basic information to improve visibility."
+                          : profileCompleteness < 75
+                          ? "Add more skills and experience to boost your profile."
+                          : profileCompleteness < 90
+                          ? "You're almost there! Add social links and certifications."
+                          : "Excellent! Your profile is comprehensive and stands out."}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-600">
-                      Add more skills and experience to improve your profile
-                      visibility.
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Main Content */}
@@ -740,23 +887,29 @@ export default function ProfilePage() {
                             <FileText className="h-8 w-8 text-blue-600" />
                             <div>
                               <h3 className="font-medium text-gray-900">
-                                {uploadedResume
+                                {loadingResume
+                                  ? "Loading..."
+                                  : uploadedResume
                                   ? resumeFileName || "Uploaded Resume"
-                                  : resumeData.fileName}
+                                  : resumeData.fileName || "No resume uploaded"}
                               </h3>
                               <p className="text-sm text-gray-600">
                                 Last updated:{" "}
-                                {uploadedResume
+                                {loadingResume
+                                  ? "..."
+                                  : uploadedResume
                                   ? "Just now"
-                                  : new Date(
+                                  : resumeData.lastUpdated
+                                  ? new Date(
                                       resumeData.lastUpdated
-                                    ).toLocaleDateString()}
+                                    ).toLocaleDateString()
+                                  : "Never"}
                               </p>
                             </div>
                           </div>
 
                           {/* Only show View Resume button if a resume is uploaded */}
-                          {uploadedResume && (
+                          {(uploadedResume || resumeData.fileName) && (
                             <Button
                               variant="outlined"
                               size="sm"
@@ -775,7 +928,9 @@ export default function ProfilePage() {
                         {/* Resume Score */}
                         <div className="flex flex-col items-center text-center">
                           {(() => {
-                            const stableScore = resumeData.score || 82;
+                            const stableScore = loadingResume
+                              ? 0
+                              : resumeData.score || 0;
                             return (
                               <>
                                 <ScoreCircle score={stableScore} />
@@ -783,7 +938,11 @@ export default function ProfilePage() {
                                   Resume Score
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  {stableScore >= 80
+                                  {loadingResume
+                                    ? "Loading..."
+                                    : stableScore === 0
+                                    ? "No score yet"
+                                    : stableScore >= 80
                                     ? "Excellent"
                                     : stableScore >= 60
                                     ? "Good"
@@ -886,49 +1045,73 @@ export default function ProfilePage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Strengths */}
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            Strengths
-                          </h4>
-                          <ul className="space-y-2">
-                            {resumeData.analysis.strengths.map(
-                              (strength, index) => (
-                                <li
-                                  key={index}
-                                  className="flex items-center gap-2 text-sm text-gray-600"
-                                >
-                                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
-                                  {strength}
-                                </li>
-                              )
-                            )}
-                          </ul>
+                      {loadingResume ? (
+                        <div className="text-center py-8 text-gray-500">
+                          Loading analysis...
                         </div>
+                      ) : resumeData.analysis &&
+                        (resumeData.analysis.strengths?.length > 0 ||
+                          resumeData.analysis.weaknesses?.length > 0) ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Strengths */}
+                          <div>
+                            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              Strengths
+                            </h4>
+                            {resumeData.analysis.strengths?.length > 0 ? (
+                              <ul className="space-y-2">
+                                {resumeData.analysis.strengths.map(
+                                  (strength, index) => (
+                                    <li
+                                      key={index}
+                                      className="flex items-center gap-2 text-sm text-gray-600"
+                                    >
+                                      <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+                                      {strength}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-gray-500">
+                                No strengths identified yet
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Areas for Improvement */}
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-yellow-600" />
-                            Areas for Improvement
-                          </h4>
-                          <ul className="space-y-2">
-                            {resumeData.analysis.weaknesses.map(
-                              (weakness, index) => (
-                                <li
-                                  key={index}
-                                  className="flex items-center gap-2 text-sm text-gray-600"
-                                >
-                                  <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
-                                  {weakness}
-                                </li>
-                              )
+                          {/* Areas for Improvement */}
+                          <div>
+                            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              Areas for Improvement
+                            </h4>
+                            {resumeData.analysis.weaknesses?.length > 0 ? (
+                              <ul className="space-y-2">
+                                {resumeData.analysis.weaknesses.map(
+                                  (weakness, index) => (
+                                    <li
+                                      key={index}
+                                      className="flex items-center gap-2 text-sm text-gray-600"
+                                    >
+                                      <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
+                                      {weakness}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-gray-500">
+                                No improvement areas identified
+                              </p>
                             )}
-                          </ul>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          Upload or generate a resume to see AI analysis
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -941,11 +1124,25 @@ export default function ProfilePage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        {resumeData.suggestions.map((suggestion, index) => (
-                          <SuggestionCard key={index} suggestion={suggestion} />
-                        ))}
-                      </div>
+                      {loadingResume ? (
+                        <div className="text-center py-8 text-gray-500">
+                          Loading suggestions...
+                        </div>
+                      ) : resumeData.suggestions?.length > 0 ? (
+                        <div className="space-y-4">
+                          {resumeData.suggestions.map((suggestion, index) => (
+                            <SuggestionCard
+                              key={index}
+                              suggestion={suggestion}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          No suggestions available. Upload or generate a resume
+                          to get AI recommendations.
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
