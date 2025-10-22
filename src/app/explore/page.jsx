@@ -14,12 +14,9 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { sendPrompt } from "@/lib/services/exploreApi";
+import { sendExplore, sendPrompt } from "@/lib/services/exploreApi";
+import { getUserProfile } from "@/lib/services/profileApi";
 
-// Improved typewriter hook (v2):
-// - Uses substring rendering (safer against skipped chars)
-// - Resilient under React 18 StrictMode double-invocation
-// - Guarded for undefined / non-string inputs
 function useTypewriter(
   text,
   { speed = 30, enabled = true, onTypingState = () => {} }
@@ -623,6 +620,7 @@ export default function ChatPage() {
   const [speaking, setSpeaking] = useState(false);
   const [searchHistory, setSearchHistory] = useState("");
   const [loaded, setLoaded] = useState(false); // New state for animation trigger
+  const [aiLoading, setAiLoading] = useState(false); // Loading state for AI response
   const inputRef = useRef();
   const messagesRef = useRef(null);
   const textareaRef = useRef(null);
@@ -924,6 +922,7 @@ export default function ChatPage() {
     setInput("");
     setFilePreview(null);
     setShowSuggestions(false);
+    setAiLoading(true); // Start loading
 
     // Add user message first functionally & keep a local accumulator
     let workingMessages = [];
@@ -934,10 +933,39 @@ export default function ChatPage() {
 
     let aiText = "";
     try {
-      const { data } = await sendPrompt({ prompt: promptText });
-      aiText = (data?.output ?? "No response").toString();
+      // Use /explore endpoint only for explore mode, /prompt for all others
+      if (mode === "explore") {
+        const profileContext = {};
+        // Add the user's skills by using getUserProfile
+        try {
+          const userProfile = await getUserProfile();
+          if (userProfile) {
+            profileContext.skills = userProfile.skills;
+            profileContext.role = userProfile.role;
+            profileContext.experience = userProfile.experience;
+            profileContext.interests = userProfile.interests;
+            profileContext.location = userProfile.location;
+          }
+        } catch (profileErr) {
+          console.warn("Could not fetch user profile:", profileErr);
+        }
+        const { data } = await sendExplore({
+          question: promptText,
+          profile: profileContext,
+        });
+        aiText = (data?.answer || data?.output || "No response").toString();
+      } else {
+        // Use legacy /prompt endpoint for all other modes
+        const { data } = await sendPrompt({ prompt: promptText });
+        aiText = (data?.output || data?.answer || "No response").toString();
+      }
     } catch (e) {
-      aiText = "Error processing request";
+      console.error("API request failed", e);
+      aiText = e?.response?.data?.error
+        ? `Error: ${e.response.data.error}`
+        : "Error processing request";
+    } finally {
+      setAiLoading(false); // Stop loading
     }
 
     const aiMsg = { role: "ai", text: aiText, files: [] };
@@ -1059,6 +1087,18 @@ export default function ChatPage() {
                         />
                       </div>
                     ))}
+
+                    {/* AI Loading Spinner */}
+                    {aiLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl px-6 py-4 max-w-[80%] shadow-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            <span className="text-sm">AI is thinking...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1075,14 +1115,14 @@ export default function ChatPage() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
-                          if (!typing) ask();
+                          if (!typing && !aiLoading) ask();
                         }
                       }}
-                      disabled={typing}
+                      disabled={typing || aiLoading}
                       placeholder={`Ask anything in ${
                         MODES?.find((m) => m.id === mode)?.label || mode
                       }...`}
-                      className="resize-none flex-1 p-3 rounded-lg border border-gray-200/50 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md focus:shadow-lg"
+                      className="resize-none flex-1 p-3 rounded-lg border border-gray-200/50 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md focus:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     />
 
                     <div className="flex flex-col gap-2">
@@ -1090,7 +1130,8 @@ export default function ChatPage() {
                         onClick={() =>
                           listening ? stopListening() : startListening()
                         }
-                        className={`p-3 rounded-lg transition-all duration-300 hover:scale-105 ${
+                        disabled={aiLoading}
+                        className={`p-3 rounded-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                           listening
                             ? "bg-red-500 text-white shadow-lg hover:shadow-xl"
                             : "bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-600 hover:bg-gray-50/80 hover:shadow-md"
@@ -1103,7 +1144,8 @@ export default function ChatPage() {
                       </button>
                       <button
                         onClick={() => ask()}
-                        className="p-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+                        disabled={aiLoading}
+                        className="p-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Send message"
                       >
                         <Send size={20} />
@@ -1136,15 +1178,6 @@ export default function ChatPage() {
                           ×
                         </button>
                       </div>
-                    )}
-
-                    {!showSuggestions && messages.length > 0 && (
-                      <button
-                        onClick={() => setShowSuggestions(true)}
-                        className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50/80 rounded-lg transition-all duration-300 hover:scale-105"
-                      >
-                        Show suggestions
-                      </button>
                     )}
                   </div>
                 </div>

@@ -29,6 +29,9 @@ const roadmapData = {
   title: "Full-Stack Developer",
   totalDuration: "12 months",
   completionRate: 35,
+  description: "Personalized path to become a Full-Stack Developer",
+  progress: 35,
+  startDate: "2024-01-01",
   phases: [
     {
       id: 1,
