@@ -15,36 +15,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { generateRoadmap } from "@/lib/services/roadmapApi";
+import {
+  generateRoadmap,
+  listRoadmaps,
+  createRoadmap,
+} from "@/lib/services/roadmapApi";
 
 const RoadmapDashboard = () => {
   const router = useRouter();
-  const [roadmaps, setRoadmaps] = useState([
-    {
-      id: 1,
-      title: "Full-Stack Developer",
-      description: "Personalized path to become a Full-Stack Developer",
-      progress: 35,
-      duration: "6 months",
-      startDate: "2024-01-01",
-    },
-    {
-      id: 2,
-      title: "Digital Marketing",
-      description: "Comprehensive digital marketing and growth strategies",
-      progress: 22,
-      duration: "4 months",
-      startDate: "2024-02-15",
-    },
-    {
-      id: 3,
-      title: "Photography Basics",
-      description: "Learn the fundamentals of photography and editing",
-      progress: 78,
-      duration: "3 months",
-      startDate: "2023-09-01",
-    },
-  ]);
+  const [roadmaps, setRoadmaps] = useState([]);
+  const [roadmapsLoading, setRoadmapsLoading] = useState(true);
+  const [roadmapsError, setRoadmapsError] = useState("");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRoadmapTitle, setNewRoadmapTitle] = useState("");
@@ -58,17 +39,38 @@ const RoadmapDashboard = () => {
   );
 
   useEffect(() => {
-    // Start progress animation after all items have animated in
+    const loadRoadmaps = async () => {
+      setRoadmapsLoading(true);
+      setRoadmapsError("");
+      try {
+        const { data } = await listRoadmaps();
+        console.log(data.data);
+        const items = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setRoadmaps(items);
+      } catch (e) {
+        setRoadmapsError(e?.message || "Failed to load roadmaps");
+      } finally {
+        setRoadmapsLoading(false);
+      }
+    };
+    loadRoadmaps();
+  }, []);
+
+  useEffect(() => {
     const timeout = setTimeout(() => {
       const interval = setInterval(() => {
         setAnimatedProgress((prev) =>
-          prev.map((val, idx) => (val < roadmaps[idx].progress ? val + 2 : val))
+          prev.map((val, idx) =>
+            roadmaps[idx] && val < (roadmaps[idx].progress || 0) ? val + 2 : val
+          )
         );
       }, 20);
-
       setTimeout(() => clearInterval(interval), 3000);
-    }, 600); // Wait for all animations to complete
-
+    }, 600);
     return () => clearTimeout(timeout);
   }, [roadmaps]);
 
@@ -82,6 +84,43 @@ const RoadmapDashboard = () => {
     "10 months",
     "12 months",
   ];
+
+  const clamp = (n, min, max) => {
+    const num = Number(n);
+    if (Number.isNaN(num)) return min;
+    return Math.max(min, Math.min(max, num));
+  };
+
+  const normalizeRoadmap = (roadmapData) => {
+    const normStatus = (s) =>
+      ["pending", "in-progress", "completed"].includes(String(s))
+        ? String(s)
+        : "pending";
+    const normType = (t) =>
+      ["course", "project", "certification"].includes(String(t))
+        ? String(t)
+        : "course";
+    const phases = Array.isArray(roadmapData?.phases)
+      ? roadmapData.phases.map((p, pi) => ({
+          id: Number.isFinite(Number(p?.id)) ? Number(p.id) : pi + 1,
+          title: String(p?.title || `Phase ${pi + 1}`),
+          duration: String(p?.duration || ""),
+          status: normStatus(p?.status),
+          progress: clamp(p?.progress ?? 0, 0, 100),
+          milestones: Array.isArray(p?.milestones)
+            ? p.milestones.map((m, mi) => ({
+                id: Number.isFinite(Number(m?.id)) ? Number(m.id) : mi + 1,
+                title: String(m?.title || `Milestone ${mi + 1}`),
+                type: normType(m?.type),
+                duration: String(m?.duration || ""),
+                status: normStatus(m?.status),
+                provider: m?.provider ? String(m.provider) : undefined,
+              }))
+            : [],
+        }))
+      : [];
+    return { ...roadmapData, phases };
+  };
 
   const handleAddRoadmap = async () => {
     setGenerationError("");
@@ -115,23 +154,33 @@ const RoadmapDashboard = () => {
         throw new Error(data.error || "Failed to generate roadmap");
       }
 
-      const roadmapData = data.roadmap;
+      const roadmapData = normalizeRoadmap(data.roadmap);
       const completionRate = roadmapData.completionRate || 0;
 
-      const roadmap = {
-        id: Date.now(),
+      const toSave = {
         title: roadmapData.title || newRoadmapTitle,
         description: `${
           roadmapData.phases?.length || 0
         } phases with personalized milestones`,
+        completionRate,
         progress: completionRate,
-        duration: roadmapData.totalDuration || newRoadmapDuration,
+        totalDuration: roadmapData.totalDuration || newRoadmapDuration,
         startDate: new Date().toISOString().split("T")[0],
-        phases: roadmapData.phases || [],
-        certifications: data.certifications || [],
+        phases: Array.isArray(roadmapData.phases) ? roadmapData.phases : [],
       };
 
-      setRoadmaps([roadmap, ...roadmaps]);
+      let created;
+      try {
+        const saved = await createRoadmap(toSave);
+        created = saved?.data?.data ||
+          saved?.data?.item ||
+          saved?.data || { id: Date.now(), ...toSave };
+      } catch (e) {
+        console.error("Error saving roadmap:", e);
+        created = { id: Date.now(), ...toSave };
+      }
+
+      setRoadmaps((prev) => [created, ...prev]);
       setNewRoadmapTitle("");
       setNewRoadmapSkills("");
       setNewRoadmapExperience("");
@@ -196,6 +245,11 @@ const RoadmapDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
+            {roadmapsError && (
+              <div className="md:col-span-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                {roadmapsError}
+              </div>
+            )}
             {[
               {
                 icon: TrendingUp,
@@ -405,6 +459,11 @@ const RoadmapDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
+            {roadmapsLoading && (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="animate-spin text-blue-600" size={28} />
+              </div>
+            )}
             <AnimatePresence>
               {roadmaps.map((roadmap, index) => (
                 <motion.div
