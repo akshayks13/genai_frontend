@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Briefcase,
@@ -33,111 +33,110 @@ import {
 } from "@/components/ui/Card";
 import AuthGuard from "@/components/AuthGuard";
 
-// Mock data - replace with actual API calls
-const mockJobs = [
-  {
-    id: 1,
-    title: "Software Engineer – Engineering Systems",
-    company_name: "Google India",
-    location: "Bangalore, Karnataka",
-    employment_type: "Full-time",
-    description:
-      "Build and maintain large-scale distributed systems that power Google's infrastructure. Work with cutting-edge technologies and solve complex engineering challenges.",
-    applylink: "https://careers.google.com/jobs/123",
-    fitScore: 92,
-    whyThisJob:
-      "Strong match for your React, Node.js, and cloud computing skills. Team culture aligns with your collaborative preferences.",
-    salary: "₹25-35 LPA",
-    requiredSkills: ["React", "Node.js", "AWS", "Docker", "Kubernetes"],
-    growthTrend: "+18% job postings this month",
-    saved: false,
-  },
-  {
-    id: 2,
-    title: "Senior Frontend Developer",
-    company_name: "Microsoft",
-    location: "Hyderabad, Telangana",
-    employment_type: "Full-time",
-    description:
-      "Lead frontend development for Azure portal. Create intuitive user experiences for enterprise cloud services.",
-    applylink: "https://careers.microsoft.com/jobs/456",
-    fitScore: 88,
-    whyThisJob:
-      "Excellent match for your frontend expertise and cloud platform experience.",
-    salary: "₹30-40 LPA",
-    requiredSkills: ["React", "TypeScript", "Azure", "Redux", "Jest"],
-    growthTrend: "+12% job postings this month",
-    saved: true,
-  },
-  {
-    id: 3,
-    title: "DevOps Engineer",
-    company_name: "Amazon Web Services",
-    location: "Remote",
-    employment_type: "Full-time",
-    description:
-      "Design and implement CI/CD pipelines. Automate infrastructure deployment and monitoring for AWS services.",
-    applylink: "https://amazon.jobs/en/jobs/789",
-    fitScore: 85,
-    whyThisJob:
-      "Great fit for your containerization skills and cloud infrastructure knowledge.",
-    salary: "₹28-38 LPA",
-    requiredSkills: ["Docker", "Kubernetes", "AWS", "Terraform", "Python"],
-    growthTrend: "+25% job postings this month",
-    saved: false,
-  },
-  {
-    id: 4,
-    title: "Full Stack Developer",
-    company_name: "Flipkart",
-    location: "Bangalore, Karnataka",
-    employment_type: "Full-time",
-    description:
-      "Build scalable e-commerce features. Work on both frontend and backend systems handling millions of users.",
-    applylink: "https://www.flipkartcareers.com/jobs/101",
-    fitScore: 90,
-    whyThisJob:
-      "Perfect match for your full-stack skills and e-commerce domain interest.",
-    salary: "₹22-32 LPA",
-    requiredSkills: ["React", "Node.js", "MongoDB", "Redis", "Microservices"],
-    growthTrend: "+8% job postings this month",
-    saved: false,
-  },
-  {
-    id: 5,
-    title: "AI/ML Engineer",
-    company_name: "NVIDIA",
-    location: "Pune, Maharashtra",
-    employment_type: "Full-time",
-    description:
-      "Develop and optimize machine learning models for computer vision applications. Work with state-of-the-art GPU technology.",
-    applylink: "https://nvidia.wd5.myworkdayjobs.com/jobs/202",
-    fitScore: 78,
-    whyThisJob:
-      "Good fit for your Python skills and interest in emerging technologies.",
-    salary: "₹35-50 LPA",
-    requiredSkills: ["Python", "TensorFlow", "PyTorch", "CUDA", "Computer Vision"],
-    growthTrend: "+35% job postings this month",
-    saved: true,
-  },
-  {
-    id: 6,
-    title: "Backend Engineer",
-    company_name: "Razorpay",
-    location: "Bangalore, Karnataka",
-    employment_type: "Full-time",
-    description:
-      "Build robust payment processing systems. Design APIs and microservices handling high-volume financial transactions.",
-    applylink: "https://razorpay.com/jobs/303",
-    fitScore: 87,
-    whyThisJob:
-      "Strong alignment with your backend expertise and API design experience.",
-    salary: "₹20-30 LPA",
-    requiredSkills: ["Node.js", "PostgreSQL", "Redis", "Kafka", "Microservices"],
-    growthTrend: "+15% job postings this month",
-    saved: false,
-  },
-];
+// const jobListings = [
+//   {
+//     id: 1,
+//     title: "Software Engineer – Engineering Systems",
+//     company_name: "Google India",
+//     location: "Bangalore, Karnataka",
+//     employment_type: "Full-time",
+//     description:
+//       "Build and maintain large-scale distributed systems that power Google's infrastructure. Work with cutting-edge technologies and solve complex engineering challenges.",
+//     applylink: "https://careers.google.com/jobs/123",
+//     fitScore: 92,
+//     whyThisJob:
+//       "Strong match for your React, Node.js, and cloud computing skills. Team culture aligns with your collaborative preferences.",
+//     salary: "₹25-35 LPA",
+//     requiredSkills: ["React", "Node.js", "AWS", "Docker", "Kubernetes"],
+//     growthTrend: "+18% job postings this month",
+//     saved: false,
+//   },
+//   {
+//     id: 2,
+//     title: "Senior Frontend Developer",
+//     company_name: "Microsoft",
+//     location: "Hyderabad, Telangana",
+//     employment_type: "Full-time",
+//     description:
+//       "Lead frontend development for Azure portal. Create intuitive user experiences for enterprise cloud services.",
+//     applylink: "https://careers.microsoft.com/jobs/456",
+//     fitScore: 88,
+//     whyThisJob:
+//       "Excellent match for your frontend expertise and cloud platform experience.",
+//     salary: "₹30-40 LPA",
+//     requiredSkills: ["React", "TypeScript", "Azure", "Redux", "Jest"],
+//     growthTrend: "+12% job postings this month",
+//     saved: true,
+//   },
+//   {
+//     id: 3,
+//     title: "DevOps Engineer",
+//     company_name: "Amazon Web Services",
+//     location: "Remote",
+//     employment_type: "Full-time",
+//     description:
+//       "Design and implement CI/CD pipelines. Automate infrastructure deployment and monitoring for AWS services.",
+//     applylink: "https://amazon.jobs/en/jobs/789",
+//     fitScore: 85,
+//     whyThisJob:
+//       "Great fit for your containerization skills and cloud infrastructure knowledge.",
+//     salary: "₹28-38 LPA",
+//     requiredSkills: ["Docker", "Kubernetes", "AWS", "Terraform", "Python"],
+//     growthTrend: "+25% job postings this month",
+//     saved: false,
+//   },
+//   {
+//     id: 4,
+//     title: "Full Stack Developer",
+//     company_name: "Flipkart",
+//     location: "Bangalore, Karnataka",
+//     employment_type: "Full-time",
+//     description:
+//       "Build scalable e-commerce features. Work on both frontend and backend systems handling millions of users.",
+//     applylink: "https://www.flipkartcareers.com/jobs/101",
+//     fitScore: 90,
+//     whyThisJob:
+//       "Perfect match for your full-stack skills and e-commerce domain interest.",
+//     salary: "₹22-32 LPA",
+//     requiredSkills: ["React", "Node.js", "MongoDB", "Redis", "Microservices"],
+//     growthTrend: "+8% job postings this month",
+//     saved: false,
+//   },
+//   {
+//     id: 5,
+//     title: "AI/ML Engineer",
+//     company_name: "NVIDIA",
+//     location: "Pune, Maharashtra",
+//     employment_type: "Full-time",
+//     description:
+//       "Develop and optimize machine learning models for computer vision applications. Work with state-of-the-art GPU technology.",
+//     applylink: "https://nvidia.wd5.myworkdayjobs.com/jobs/202",
+//     fitScore: 78,
+//     whyThisJob:
+//       "Good fit for your Python skills and interest in emerging technologies.",
+//     salary: "₹35-50 LPA",
+//     requiredSkills: ["Python", "TensorFlow", "PyTorch", "CUDA", "Computer Vision"],
+//     growthTrend: "+35% job postings this month",
+//     saved: true,
+//   },
+//   {
+//     id: 6,
+//     title: "Backend Engineer",
+//     company_name: "Razorpay",
+//     location: "Bangalore, Karnataka",
+//     employment_type: "Full-time",
+//     description:
+//       "Build robust payment processing systems. Design APIs and microservices handling high-volume financial transactions.",
+//     applylink: "https://razorpay.com/jobs/303",
+//     fitScore: 87,
+//     whyThisJob:
+//       "Strong alignment with your backend expertise and API design experience.",
+//     salary: "₹20-30 LPA",
+//     requiredSkills: ["Node.js", "PostgreSQL", "Redis", "Kafka", "Microservices"],
+//     growthTrend: "+15% job postings this month",
+//     saved: false,
+//   },
+// ];
 
 const regionData = [
   { city: "Bangalore", jobs: 1250, growth: "+18%" },
@@ -156,7 +155,12 @@ const interviewPrepData = {
     "What's your approach to system design?",
     "How do you handle technical debt?",
   ],
-  keySkillsFocus: ["System Design", "Data Structures", "Problem Solving", "Communication"],
+  keySkillsFocus: [
+    "System Design",
+    "Data Structures",
+    "Problem Solving",
+    "Communication",
+  ],
   tipsByCompany: {
     Google: "Focus on algorithms and scalability",
     Microsoft: "Emphasize product thinking and user experience",
@@ -165,13 +169,17 @@ const interviewPrepData = {
 };
 
 export default function CareersPage() {
+  const [jobListings, setJobListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  const [savedJobs, setSavedJobs] = useState(mockJobs.filter(job => job.saved).map(j => j.id));
+  // Use job_id from API for identifiers
+  const [savedJobs, setSavedJobs] = useState(
+    jobListings.filter((job) => job.saved).map((j) => j.job_id)
+  );
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
-  
+
   // Filters
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedExperience, setSelectedExperience] = useState("all");
@@ -179,18 +187,69 @@ export default function CareersPage() {
   const [selectedRegion, setSelectedRegion] = useState("all");
   const [selectedIndustry, setSelectedIndustry] = useState("all");
 
-  const allSkills = ["React", "Node.js", "Python", "AWS", "Docker", "Kubernetes", "TypeScript", "MongoDB"];
+  const allSkills = [
+    "React",
+    "Node.js",
+    "Python",
+    "AWS",
+    "Docker",
+    "Kubernetes",
+    "TypeScript",
+    "MongoDB",
+  ];
   const experienceLevels = ["all", "Entry Level", "Mid Level", "Senior Level"];
   const workTypes = ["all", "Remote", "Hybrid", "On-site"];
-  const regions = ["all", "Bangalore", "Hyderabad", "Pune", "Mumbai", "Delhi NCR", "Chennai"];
-  const industries = ["all", "Technology", "E-commerce", "Finance", "Healthcare", "EdTech"];
+  const regions = [
+    "all",
+    "Bangalore",
+    "Hyderabad",
+    "Pune",
+    "Mumbai",
+    "Delhi NCR",
+    "Chennai",
+  ];
+  const industries = [
+    "all",
+    "Technology",
+    "E-commerce",
+    "Finance",
+    "Healthcare",
+    "EdTech",
+  ];
+
+  useEffect(() => {
+    async function fetchLatestJobs() {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_PROMPT_URL}/jobs/latest?limit=25`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("data:", data);
+        setJobListings(data.jobs);
+      } catch (err) {
+        console.error("Error fetching latest jobs:", err);
+      }
+    }
+
+    fetchLatestJobs();
+  }, []);
 
   const filteredJobs = useMemo(() => {
-    let jobs = mockJobs;
+    let jobs = jobListings;
+
+    jobs = jobs.map((j) => {
+      j.requiredSkills = j.requiredSkills || [];
+      return j;
+    });
 
     // Show saved only filter
     if (showSavedOnly) {
-      jobs = jobs.filter(job => savedJobs.includes(job.id));
+      jobs = jobs.filter((job) => savedJobs.includes(job.job_id));
     }
 
     // Search query
@@ -225,11 +284,21 @@ export default function CareersPage() {
     }
 
     return jobs;
-  }, [searchQuery, selectedSkills, selectedWorkType, selectedRegion, showSavedOnly, savedJobs]);
+  }, [
+    searchQuery,
+    selectedSkills,
+    selectedWorkType,
+    selectedRegion,
+    showSavedOnly,
+    savedJobs,
+    jobListings,
+  ]);
 
   const toggleSaveJob = (jobId) => {
     setSavedJobs((prev) =>
-      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+      prev.includes(jobId)
+        ? prev.filter((id) => id !== jobId)
+        : [...prev, jobId]
     );
   };
 
@@ -254,7 +323,7 @@ export default function CareersPage() {
     setSearchQuery("");
   };
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     selectedSkills.length > 0 ||
     selectedExperience !== "all" ||
     selectedWorkType !== "all" ||
@@ -276,7 +345,8 @@ export default function CareersPage() {
               AI-Curated Career Opportunities
             </h1>
             <p className="text-grey-600">
-              Discover jobs perfectly matched to your skills and career aspirations
+              Discover jobs perfectly matched to your skills and career
+              aspirations
             </p>
           </motion.div>
 
@@ -291,8 +361,12 @@ export default function CareersPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">Total Recommendations</p>
-                    <p className="text-2xl font-bold text-grey-900">{filteredJobs.length}</p>
+                    <p className="text-sm text-grey-600 mb-1">
+                      Total Recommendations
+                    </p>
+                    <p className="text-2xl font-bold text-grey-900">
+                      {filteredJobs.length}
+                    </p>
                     <p className="text-xs text-green-600 mt-1">+12 this week</p>
                   </div>
                   <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
@@ -306,7 +380,9 @@ export default function CareersPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">Trending Domains</p>
+                    <p className="text-sm text-grey-600 mb-1">
+                      Trending Domains
+                    </p>
                     <p className="text-2xl font-bold text-grey-900">AI/ML</p>
                     <p className="text-xs text-green-600 mt-1">+35% growth</p>
                   </div>
@@ -321,7 +397,9 @@ export default function CareersPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-grey-600 mb-1">Top Required Skills</p>
+                    <p className="text-sm text-grey-600 mb-1">
+                      Top Required Skills
+                    </p>
                     <p className="text-2xl font-bold text-grey-900">React</p>
                     <p className="text-xs text-green-600 mt-1">1,200+ jobs</p>
                   </div>
@@ -337,8 +415,12 @@ export default function CareersPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-grey-600 mb-1">Saved Jobs</p>
-                    <p className="text-2xl font-bold text-grey-900">{savedJobs.length}</p>
-                    <p className="text-xs text-grey-500 mt-1">View collection</p>
+                    <p className="text-2xl font-bold text-grey-900">
+                      {savedJobs.length}
+                    </p>
+                    <p className="text-xs text-grey-500 mt-1">
+                      View collection
+                    </p>
                   </div>
                   <div className="p-3 rounded-lg bg-red-50 text-red-600">
                     <Heart className="h-6 w-6" />
@@ -372,7 +454,11 @@ export default function CareersPage() {
                     variant={showSavedOnly ? "primary" : "outlined"}
                     onClick={() => setShowSavedOnly(!showSavedOnly)}
                   >
-                    <Heart className={`h-4 w-4 mr-2 ${showSavedOnly ? 'fill-current' : ''}`} />
+                    <Heart
+                      className={`h-4 w-4 mr-2 ${
+                        showSavedOnly ? "fill-current" : ""
+                      }`}
+                    />
                     Saved ({savedJobs.length})
                   </Button>
                   {hasActiveFilters && (
@@ -449,13 +535,18 @@ export default function CareersPage() {
                     </label>
                     <div className="space-y-2">
                       {workTypes.map((type) => (
-                        <label key={type} className="flex items-center cursor-pointer">
+                        <label
+                          key={type}
+                          className="flex items-center cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name="workType"
                             value={type}
                             checked={selectedWorkType === type}
-                            onChange={(e) => setSelectedWorkType(e.target.value)}
+                            onChange={(e) =>
+                              setSelectedWorkType(e.target.value)
+                            }
                             className="mr-2"
                           />
                           <span className="text-sm text-grey-700">
@@ -523,21 +614,25 @@ export default function CareersPage() {
                       Try adjusting your filters or search criteria
                     </p>
                     {hasActiveFilters && (
-                      <Button onClick={clearAllFilters}>Clear All Filters</Button>
+                      <Button onClick={clearAllFilters}>
+                        Clear All Filters
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
               ) : (
                 filteredJobs.map((job, index) => (
                   <motion.div
-                    key={job.id}
+                    key={job.job_id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
                     <Card
                       className={`hover:shadow-lg transition-all cursor-pointer ${
-                        selectedJob?.id === job.id ? "ring-2 ring-blue-500" : ""
+                        selectedJob?.job_id === job.job_id
+                          ? "ring-2 ring-blue-500"
+                          : ""
                       }`}
                       onClick={() => handleJobClick(job)}
                     >
@@ -570,17 +665,19 @@ export default function CareersPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleSaveJob(job.id);
+                              toggleSaveJob(job.job_id);
                             }}
                             className={`p-2 rounded-full transition-colors ${
-                              savedJobs.includes(job.id)
+                              savedJobs.includes(job.job_id)
                                 ? "bg-red-50 text-red-600"
                                 : "bg-grey-100 text-grey-600 hover:bg-grey-200"
                             }`}
                           >
                             <Heart
                               className={`h-5 w-5 ${
-                                savedJobs.includes(job.id) ? "fill-current" : ""
+                                savedJobs.includes(job.job_id)
+                                  ? "fill-current"
+                                  : ""
                               }`}
                             />
                           </button>
@@ -598,7 +695,9 @@ export default function CareersPage() {
                               <p className="text-xs font-medium text-blue-900 mb-1">
                                 Why this job is a great fit
                               </p>
-                              <p className="text-xs text-blue-800">{job.whyThisJob}</p>
+                              <p className="text-xs text-blue-800">
+                                {job.whyThisJob}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -762,7 +861,9 @@ export default function CareersPage() {
                   {showInterviewPrep && (
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg">Interview Prep</CardTitle>
+                        <CardTitle className="text-lg">
+                          Interview Prep
+                        </CardTitle>
                         <CardDescription>
                           Prepare for {selectedJob.company_name}
                         </CardDescription>
@@ -775,7 +876,10 @@ export default function CareersPage() {
                           </p>
                           <ul className="space-y-2">
                             {interviewPrepData.commonQuestions.map((q, idx) => (
-                              <li key={idx} className="text-xs text-grey-700 flex">
+                              <li
+                                key={idx}
+                                className="text-xs text-grey-700 flex"
+                              >
                                 <span className="mr-2">•</span>
                                 <span>{q}</span>
                               </li>
@@ -789,14 +893,16 @@ export default function CareersPage() {
                             Key Skills Focus
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {interviewPrepData.keySkillsFocus.map((skill, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded"
-                              >
-                                {skill}
-                              </span>
-                            ))}
+                            {interviewPrepData.keySkillsFocus.map(
+                              (skill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded"
+                                >
+                                  {skill}
+                                </span>
+                              )
+                            )}
                           </div>
                         </div>
 
@@ -806,7 +912,9 @@ export default function CareersPage() {
                             Company Summary
                           </p>
                           <p className="text-xs text-grey-700">
-                            {interviewPrepData.tipsByCompany[selectedJob.company_name.split(" ")[0]] ||
+                            {interviewPrepData.tipsByCompany[
+                              selectedJob.company_name.split(" ")[0]
+                            ] ||
                               "Research the company culture and recent news before your interview."}
                           </p>
                         </div>
@@ -822,12 +930,17 @@ export default function CareersPage() {
                     <Map className="h-5 w-5 mr-2" />
                     Regional Job Heatmap
                   </CardTitle>
-                  <CardDescription>Active job markets across India</CardDescription>
+                  <CardDescription>
+                    Active job markets across India
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {regionData.map((region, idx) => (
-                      <div key={idx} className="flex items-center justify-between">
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm font-medium text-grey-900">
@@ -840,7 +953,9 @@ export default function CareersPage() {
                           <div className="w-full bg-grey-200 rounded-full h-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${(region.jobs / 1250) * 100}%` }}
+                              style={{
+                                width: `${(region.jobs / 1250) * 100}%`,
+                              }}
                             />
                           </div>
                         </div>
