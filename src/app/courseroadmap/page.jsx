@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import AuthGuard from "@/components/AuthGuard";
 import { motion } from "framer-motion";
 import {
@@ -54,7 +54,7 @@ const certifications = [
   },
 ];
 
-export default function RoadmapPage() {
+function RoadmapContent() {
   const [selectedPhase, setSelectedPhase] = useState(null);
   const [roadmap, setRoadmap] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -482,5 +482,13 @@ export default function RoadmapPage() {
         </div>
       </div>
     </AuthGuard>
+  );
+}
+
+export default function RoadmapPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-grey-50 py-8"><div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center text-grey-600">Loading...</div></div>}>
+      <RoadmapContent />
+    </Suspense>
   );
 }
