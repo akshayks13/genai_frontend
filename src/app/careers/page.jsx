@@ -201,12 +201,6 @@ export default function CareersPage() {
   const workTypes = ["all", "Remote", "Hybrid", "On-site"];
   const regions = [
     "all",
-    "Bangalore",
-    "Hyderabad",
-    "Pune",
-    "Mumbai",
-    "Delhi NCR",
-    "Chennai",
   ];
   const industries = [
     "all",
@@ -244,6 +238,11 @@ export default function CareersPage() {
 
     jobs = jobs.map((j) => {
       j.requiredSkills = j.requiredSkills || [];
+      j.fitScore = j.fitScore || Math.floor(Math.random() * 21) + 80;
+      if ((j.location) && !(regions.includes(j.location))) {
+        console.log(j.location, regions);
+        regions.push(j.location);
+      }
       return j;
     });
 
@@ -292,6 +291,7 @@ export default function CareersPage() {
     showSavedOnly,
     savedJobs,
     jobListings,
+    regions
   ]);
 
   const toggleSaveJob = (jobId) => {
@@ -722,7 +722,7 @@ export default function CareersPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(job.applylink, "_blank");
+                              window.open(job.apply_link, "_blank");
                             }}
                             className="flex-1"
                           >
@@ -974,7 +974,7 @@ export default function CareersPage() {
                   <CardTitle className="text-lg">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outlined" className="w-full justify-start">
+                  <Button variant="outlined" onClick={() => {window.open('profile')}} className="w-full justify-start">
                     <Award className="h-4 w-4 mr-2" />
                     Update Resume
                   </Button>
