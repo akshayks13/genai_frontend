@@ -15,8 +15,22 @@ export const updateUserProfile = (data) =>
 export const getDashboardData = () =>
 	apiClient.get("/profile/dashboard", { headers: getAuthHeaders() });
 
-export const uploadResume = (formData) =>
-	apiClient.post("/profile/resume", formData, { headers: getAuthHeaders() });
+export const uploadResume = async (formData) => {
+	const base = (apiClient.defaults && apiClient.defaults.baseURL) || "";
+	const url = `${base && base.endsWith('/') ? base.slice(0, -1) : base}/profile/resume`;
+	const headers = getAuthHeaders();
+	const res = await fetch(url, {
+		method: "POST",
+		headers,
+		body: formData,
+	});
+	const data = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		const message = data?.error || data?.message || `Upload failed with ${res.status}`;
+		throw new Error(message);
+	}
+	return { data };
+};
 
 export function compileLatex(latex){
 	return apiClient.post(

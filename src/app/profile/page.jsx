@@ -299,9 +299,29 @@ export default function ProfilePage() {
         file = f;
       }
       setIsProcessingResume(true);
-      const formData = new FormData();
-      formData.append("resume", file);
-      const { data } = await uploadResumeApi(formData);
+  const formData = new FormData();
+  formData.append("resume", file, file.name);
+            const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: formData,
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Upload failed");
+      }
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {}
+
       const resume = data?.resume || data?.data?.resume || data || {};
       setResumeData((prev) => ({
         ...prev,
