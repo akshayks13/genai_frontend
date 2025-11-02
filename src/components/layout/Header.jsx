@@ -16,7 +16,8 @@ import {
   Home,
   Settings,
   LogOut,
-  UserCircle
+  UserCircle,
+  Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ import { checkAuth } from '../AuthGuard';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: TrendingUp },
   { name: 'Explore', href: '/explore', icon: Target },
+  { name: 'Careers', href: '/careers', icon: Briefcase },
   { name: 'Roadmap', href: '/roadmap', icon: Map },
   { name: 'Trends', href: '/trends', icon: TrendingUp },
 ];

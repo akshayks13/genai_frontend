@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   User,
@@ -87,6 +88,8 @@ export default function ProfilePage() {
     score: 0,
     lastUpdated: "",
     fileName: "",
+    url: "",
+    publicId: "",
     suggestions: [],
     analysis: {
       strengths: [],
@@ -95,6 +98,58 @@ export default function ProfilePage() {
   });
   const [loadingResume, setLoadingResume] = useState(true);
   const fileInputRef = useRef(null);
+  const router = useRouter();
+
+  const viewResume = () => {
+    const url = resumeData?.url || uploadedResume;
+    if (!url) {
+      alert("No resume URL available to view.");
+      return;
+    }
+    window.open(url, "_blank");
+  };
+
+  const downloadResume = async () => {
+    const url = resumeData?.url || uploadedResume;
+    if (!url) {
+      alert("No resume URL available to download.");
+      return;
+    }
+    const filename = (resumeData.fileName || "resume.pdf").replace(/[^\w.\-]+/g, "_");
+    try {
+      const res = await fetch(url, { credentials: "omit" });
+      if (res.ok) {
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
+    } catch (e) {
+    }
+
+    try {
+      if (/res\.cloudinary\.com/.test(url) && url.includes("/upload/")) {
+        const dlUrl = url.replace("/upload/", `/upload/fl_attachment:${encodeURIComponent(filename)}/`);
+        const a = document.createElement("a");
+        a.href = dlUrl;
+        a.target = "_blank";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+    } catch (e) {
+    }
+
+    window.open(url, "_blank");
+  };
 
   const tabs = [
     { id: "personal", label: "Personal Info", icon: User },
@@ -114,7 +169,7 @@ export default function ProfilePage() {
       }
       await updateUserProfile(payload);
       void fetchProfile();
-      void fetchProfileCompleteness(); // Refresh completeness after save
+      void fetchProfileCompleteness();
       setIsEditing(false);
     } catch (e) {
       setError(e.message || "Failed to update profile");
@@ -154,57 +209,53 @@ export default function ProfilePage() {
     });
   };
 
-  const handleUploadResume = async () => {
-    setIsProcessingResume(true);
+  const handleUploadResume = async (file) => {
     try {
-      // Simulate processing time
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Generate mock analysis data
-      const newResumeData = {
-        score: 78,
-        lastUpdated: new Date().toISOString(),
-        fileName: resumeFileName,
-        suggestions: [
-          {
-            type: "improvement",
-            title: "Add quantifiable achievements",
-            description:
-              "Include specific metrics and numbers to showcase your impact",
-            priority: "high",
-          },
-          {
-            type: "enhancement",
-            title: "Optimize keywords",
-            description:
-              "Include more industry-relevant keywords for ATS compatibility",
-            priority: "medium",
-          },
-        ],
-        analysis: {
-          strengths: [
-            "Strong technical skills",
-            "Clear experience progression",
-          ],
-          weaknesses: [
-            "Missing quantifiable achievements",
-            "Could use more keywords",
-          ],
-        },
-      };
-
-      // Update backend with new resume data
-      const payload = {
-        email: editData.email || localStorage.getItem("userEmail"),
-        resume: newResumeData,
-      };
-
-      await updateUserProfile(payload);
-      setResumeData(newResumeData);
-      alert("Resume uploaded and analyzed successfully!");
+      if (!file) {
+        const f = fileInputRef.current?.files?.[0];
+        if (!f) {
+          alert("Please choose a PDF file");
+          return;
+        }
+        file = f;
+      }
+      setIsProcessingResume(true);
+      const formData = new FormData();
+      formData.append("resume", file);
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: formData,
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Upload failed");
+      }
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {}
+      const resume = data?.resume || data?.data?.resume || data || {};
+      setResumeData((prev) => ({
+        ...prev,
+        score: resume.score ?? prev.score,
+        lastUpdated: resume.lastUpdated || new Date().toISOString(),
+        fileName: resume.fileName || file.name,
+        url: resume.url || prev.url,
+        publicId: resume.publicId || prev.publicId,
+        suggestions: resume.suggestions || prev.suggestions,
+        analysis: resume.analysis || prev.analysis,
+      }));
+      if (resume.url) setUploadedResume(resume.url);
     } catch (error) {
       console.error("Resume upload error:", error);
-      alert("Failed to upload resume. Please try again.");
     } finally {
       setIsProcessingResume(false);
     }
@@ -346,6 +397,8 @@ export default function ProfilePage() {
           score: data.resume.score || 0,
           lastUpdated: data.resume.lastUpdated || "",
           fileName: data.resume.fileName || "",
+          url: data.resume.url || "",
+          publicId: data.resume.publicId || "",
           suggestions: data.resume.suggestions || [],
           analysis: {
             strengths: data.resume.analysis?.strengths || [],
@@ -867,6 +920,7 @@ export default function ProfilePage() {
                       if (file) {
                         setUploadedResume(URL.createObjectURL(file));
                         setResumeFileName(file.name);
+                        void handleUploadResume(file);
                       }
                     }}
                   />
@@ -908,21 +962,45 @@ export default function ProfilePage() {
                             </div>
                           </div>
 
-                          {/* Only show View Resume button if a resume is uploaded */}
-                          {(uploadedResume || resumeData.fileName) && (
+                          <div className="flex flex-wrap gap-2">
+                            {(uploadedResume ||
+                              resumeData.fileName ||
+                              resumeData.url) && (
+                              <>
+                                <Button
+                                  variant="outlined"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    viewResume();
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Resume
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    downloadResume();
+                                  }}
+                                >
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Download PDF
+                                </Button>
+                              </>
+                            )}
                             <Button
                               variant="outlined"
                               size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setShowResumePreview(true);
-                              }}
+                              onClick={() => router.push("/profile/resume")}
                             >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Resume
+                              <Edit3 className="h-4 w-4 mr-2" />
+                              LaTeX Editor
                             </Button>
-                          )}
+                          </div>
                         </div>
 
                         {/* Resume Score */}
