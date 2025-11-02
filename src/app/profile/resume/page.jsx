@@ -169,6 +169,11 @@ ${src}
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="mx-auto max-w-7xl">
           <div className="mb-4 flex items-center gap-3">
+            <button className="text-blue-600 hover:scale-110 transition">
+              <a href="/profile">
+                &larr; Back to Profile
+              </a>
+            </button>
             <select
               value={template}
               onChange={(e) => setTemplate(e.target.value)}

@@ -28,6 +28,7 @@ import {
   Target,
   TrendingUp,
   FileText,
+  Download,
   Upload,
   Sparkles,
   Star,
@@ -99,6 +100,56 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null);
   const router = useRouter();
 
+  const viewResume = () => {
+    const url = resumeData?.url || uploadedResume;
+    if (!url) {
+      alert("No resume URL available to view.");
+      return;
+    }
+    window.open(url, "_blank");
+  };
+
+  const downloadResume = async () => {
+    const url = resumeData?.url || uploadedResume;
+    if (!url) {
+      alert("No resume URL available to download.");
+      return;
+    }
+    const filename = (resumeData.fileName || "resume.pdf").replace(/[^\w.\-]+/g, "_");
+    try {
+      const res = await fetch(url, { credentials: "omit" });
+      if (res.ok) {
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
+    } catch (e) {
+    }
+
+    try {
+      if (/res\.cloudinary\.com/.test(url) && url.includes("/upload/")) {
+        const dlUrl = url.replace("/upload/", `/upload/fl_attachment:${encodeURIComponent(filename)}/`);
+        const a = document.createElement("a");
+        a.href = dlUrl;
+        a.target = "_blank";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+    } catch (e) {
+    }
+
+    window.open(url, "_blank");
+  };
 
   const tabs = [
     { id: "personal", label: "Personal Info", icon: User },
@@ -118,7 +169,7 @@ export default function ProfilePage() {
       }
       await updateUserProfile(payload);
       void fetchProfile();
-      void fetchProfileCompleteness(); // Refresh completeness after save
+      void fetchProfileCompleteness();
       setIsEditing(false);
     } catch (e) {
       setError(e.message || "Failed to update profile");
@@ -171,12 +222,18 @@ export default function ProfilePage() {
       setIsProcessingResume(true);
       const formData = new FormData();
       formData.append("resume", file);
-      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        body: formData,
-      });
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: formData,
+        }
+      );
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || "Upload failed");
@@ -905,31 +962,45 @@ export default function ProfilePage() {
                             </div>
                           </div>
 
-                          {/* Only show View Resume button if a resume is uploaded */}
-                            <div className="flex flex-wrap gap-2">
-                              {(uploadedResume || resumeData.fileName) && (
+                          <div className="flex flex-wrap gap-2">
+                            {(uploadedResume ||
+                              resumeData.fileName ||
+                              resumeData.url) && (
+                              <>
                                 <Button
                                   variant="outlined"
                                   size="sm"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    setShowResumePreview(true);
+                                    viewResume();
                                   }}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   View Resume
                                 </Button>
-                              )}
-                              <Button
-                                variant="outlined"
-                                size="sm"
-                                onClick={() => router.push("/profile/resume")}
-                              >
-                                <Edit3 className="h-4 w-4 mr-2" />
-                                Edit LaTeX
-                              </Button>
-                            </div>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    downloadResume();
+                                  }}
+                                >
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Download PDF
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              variant="outlined"
+                              size="sm"
+                              onClick={() => router.push("/profile/resume")}
+                            >
+                              <Edit3 className="h-4 w-4 mr-2" />
+                              LaTeX Editor
+                            </Button>
+                          </div>
                         </div>
 
                         {/* Resume Score */}
