@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { sendExplore, sendPrompt } from "@/lib/services/exploreApi";
 import { getUserProfile } from "@/lib/services/profileApi";
+import { translateToEnglish, detectLanguage } from "@/lib/services/translateApi";
+import { Globe, Languages } from "lucide-react";
 
 function useTypewriter(
   text,
@@ -525,21 +527,63 @@ function ModeSelector({ mode, setMode }) {
     </div>
   );
 }
-
+function getLanguageName(code) {
+  const languages = {
+    'ta': 'Tamil',
+    'hi': 'Hindi',
+    'te': 'Telugu',
+    'ml': 'Malayalam',
+    'kn': 'Kannada',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German',
+    'zh': 'Chinese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'ar': 'Arabic',
+    'en': 'English'
+  };
+  return languages[code] || code.toUpperCase();
+}
 function MessageBubble({ m, onSpeakMessage, setTyping }) {
+  const [showOriginal, setShowOriginal] = useState(false);
   const isAI = m.role === "ai";
   const typedText = useTypewriter(m.text, {
     speed: 20,
     enabled: isAI,
     onTypingState: setTyping,
   });
+  
+  const displayText = (m.role === "user" && showOriginal && m.text) ? m.text : typedText;
+  const wasTranslated = m.role === "user" && m.translatedText && m.translatedText !== m.text;
+
   if (m.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[75%] bg-blue-600 text-white p-4 rounded-3xl rounded-br-lg shadow-md break-words">
-          <div className="whitespace-pre-wrap">{typedText}</div>
-          {m.files &&
-            m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+        <div className="max-w-[75%] space-y-2">
+          {wasTranslated && (
+            <div className="flex items-center justify-end gap-2 text-xs text-gray-500">
+              <Languages size={14} />
+              <span>Translated from {getLanguageName(m.detectedLanguage)}</span>
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className="text-blue-600 hover:underline"
+              >
+                {showOriginal ? "Show English" : "Show Original"}
+              </button>
+            </div>
+          )}
+          <div className="bg-blue-600 text-white p-4 rounded-3xl rounded-br-lg shadow-md break-words">
+            <div className="whitespace-pre-wrap">
+              {showOriginal && wasTranslated ? m.text : displayText}
+            </div>
+            {wasTranslated && showOriginal && m.translatedText && (
+              <div className="text-xs mt-2 text-blue-100 italic border-t border-blue-400 pt-2">
+                English: "{m.translatedText}"
+              </div>
+            )}
+            {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+          </div>
         </div>
       </div>
     );
@@ -558,8 +602,7 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
             </button>
           </div>
           <div className="mt-3 space-y-2">
-            {m.files &&
-              m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+            {m.files && m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
           </div>
         </div>
       </div>
@@ -621,6 +664,9 @@ export default function ChatPage() {
   const [searchHistory, setSearchHistory] = useState("");
   const [loaded, setLoaded] = useState(false); // New state for animation trigger
   const [aiLoading, setAiLoading] = useState(false); // Loading state for AI response
+  const [translating, setTranslating] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [detectedLang, setDetectedLang] = useState(null);
   const inputRef = useRef();
   const messagesRef = useRef(null);
   const textareaRef = useRef(null);
@@ -905,26 +951,50 @@ export default function ChatPage() {
     const promptText = customPrompt || input;
     if (!promptText && !filePreview) return;
 
-    // Ensure a session id exists
     let activeSessionId = currentSessionId;
     if (!activeSessionId) {
       activeSessionId = Date.now().toString();
       setCurrentSessionId(activeSessionId);
     }
 
+    setInput("");
+    setFilePreview(null);
+    setShowSuggestions(false);
+    setTranslating(true);
+
+    let translatedText = promptText;
+    let originalText = promptText;
+    let detectedLanguage = 'en';
+    let wasTranslated = false;
+
+    // Translate the input to English
+    try {
+      const translation = await translateToEnglish(promptText);
+      translatedText = translation.translatedText;
+      detectedLanguage = translation.detectedLanguage;
+      wasTranslated = translation.isTranslated;
+      
+      if (wasTranslated) {
+        setDetectedLang(detectedLanguage);
+        console.log(`Detected language: ${detectedLanguage}, Translated to English`);
+      }
+    } catch (error) {
+      console.error('Translation failed, using original text:', error);
+    } finally {
+      setTranslating(false);
+    }
+
     const userMsg = {
       role: "user",
-      text: promptText || (filePreview && `Uploaded: ${filePreview.name}`),
+      text: promptText,
+      translatedText: wasTranslated ? translatedText : null,
+      detectedLanguage: wasTranslated ? detectedLanguage : null,
       files: filePreview ? [filePreview] : [],
       mode,
     };
 
-    setInput("");
-    setFilePreview(null);
-    setShowSuggestions(false);
-    setAiLoading(true); // Start loading
+    setAiLoading(true);
 
-    // Add user message first functionally & keep a local accumulator
     let workingMessages = [];
     setMessages((prev) => {
       workingMessages = [...prev, userMsg];
@@ -933,10 +1003,11 @@ export default function ChatPage() {
 
     let aiText = "";
     try {
-      // Use /explore endpoint only for explore mode, /prompt for all others
+      // Use the translated text for API calls
+      const textToSend = wasTranslated ? translatedText : promptText;
+      
       if (mode === "explore") {
         const profileContext = {};
-        // Add the user's skills by using getUserProfile
         try {
           const userProfile = await getUserProfile();
           if (userProfile) {
@@ -950,13 +1021,12 @@ export default function ChatPage() {
           console.warn("Could not fetch user profile:", profileErr);
         }
         const { data } = await sendExplore({
-          question: promptText,
+          question: textToSend,
           profile: profileContext,
         });
         aiText = (data?.answer || data?.output || "No response").toString();
       } else {
-        // Use legacy /prompt endpoint for all other modes
-        const { data } = await sendPrompt({ prompt: promptText });
+        const { data } = await sendPrompt({ prompt: textToSend });
         aiText = (data?.output || data?.answer || "No response").toString();
       }
     } catch (e) {
@@ -965,7 +1035,7 @@ export default function ChatPage() {
         ? `Error: ${e.response.data.error}`
         : "Error processing request";
     } finally {
-      setAiLoading(false); // Stop loading
+      setAiLoading(false);
     }
 
     const aiMsg = { role: "ai", text: aiText, files: [] };
@@ -1107,6 +1177,22 @@ export default function ChatPage() {
                   className={`border-t bg-gray-50/70 backdrop-blur-sm p-4 ${getAnimationClass()}`}
                   style={getAnimationStyle(250)}
                 >
+                  {/* Translation indicators - OUTSIDE the flex container */}
+                  {detectedLang && (
+                    <div className="mb-2 flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                      <Globe size={16} />
+                      <span>Detected {getLanguageName(detectedLang)} - Auto-translating to English</span>
+                    </div>
+                  )}
+                  
+                  {translating && (
+                    <div className="mb-2 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span>Translating...</span>
+                    </div>
+                  )}
+                  
+                  {/* Now the flex container starts */}
                   <div className="flex gap-3 mb-3">
                     <textarea
                       ref={textareaRef}
