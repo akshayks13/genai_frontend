@@ -535,8 +535,7 @@ function getLanguageName(code) {
 }
 
 function MessageBubble({ m, onSpeakMessage, setTyping }) {
-  const [showOriginal, setShowOriginal] = useState(false);
-  const [showTranslated, setShowTranslated] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
   const isAI = m.role === "ai";
   const typedText = useTypewriter(m.text, {
     speed: 20,
@@ -544,47 +543,53 @@ function MessageBubble({ m, onSpeakMessage, setTyping }) {
     onTypingState: setTyping,
   });
 
+  const displayText = typedText;
   const wasTranslated =
     m.role === "user" && m.translatedText && m.translatedText !== m.text;
 
   if (m.role === "user") {
-  // For user messages, show translatedText by default, original on toggle
-  const displayUserText = showOriginal ? m.text : (m.translatedText || m.text);
-  
-  // Debug: log to see what we have
-  console.log('User message:', {
-    text: m.text,
-    translatedText: m.translatedText,
-    detectedLanguage: m.detectedLanguage,
-    wasTranslated
-  });
-  
-  return (
-    <div className="flex justify-end mb-4">
-      <div className="max-w-[50%] space-y-2">
-        {wasTranslated && (
-          <div className="flex items-center justify-end gap-2 text-xs text-gray-500 mb-1">
-            <Languages size={13} />
-            <span>From {getLanguageName(m.detectedLanguage)}</span>
-            <button
-              onClick={() => setShowOriginal(!showOriginal)}
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              {showOriginal ? "Show English" : "Show Original"}
-            </button>
+    return (
+      <div className="flex justify-end mb-4">
+        <div className="max-w-[50%] space-y-2">
+          {wasTranslated && (
+            <div className="flex items-center justify-end gap-2 text-xs text-gray-500 mb-1">
+              <Languages size={13} />
+              <span>From {getLanguageName(m.detectedLanguage)}</span>
+            </div>
+          )}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-2xl rounded-br-md shadow-md">
+            <div className="whitespace-pre-wrap break-words">
+              {displayText}
+            </div>
+            {m.files &&
+              m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
           </div>
-        )}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-2xl rounded-br-md shadow-md">
-          <div className="whitespace-pre-wrap break-words">
-            {displayUserText}
-          </div>
-          {m.files &&
-            m.files.map((f, i) => <AttachmentPreview key={i} f={f} />)}
+          {wasTranslated && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowTranslation(!showTranslation)}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg shadow-sm hover:shadow-md border border-blue-200"
+              >
+                <Languages size={12} />
+                {showTranslation ? "Hide Translation" : "Show Translation"}
+              </button>
+            </div>
+          )}
+          {wasTranslated && showTranslation && m.translatedText && (
+            <div className="bg-white border border-blue-200 rounded-xl p-3 shadow-sm">
+              <div className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1">
+                <Languages size={12} />
+                English Translation:
+              </div>
+              <div className="text-sm text-gray-800">
+                {m.translatedText}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
-} else {
+    );
+  } else {
     // AI message section - keep as updated before
     const aiWasTranslated = m.translatedText && m.translatedText !== m.text;
     
