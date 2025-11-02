@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import AuthGuard from "@/components/AuthGuard";
+import { compileLatex as compileLatexApi, uploadResume as uploadResumeApi, getResumeSource as getResumeSourceApi } from "@/lib/services/profileApi";
 
 const DEFAULT_TEMPLATE = `\\documentclass[11pt]{article}
 \\usepackage[margin=1in]{geometry}
@@ -48,23 +49,19 @@ export default function ResumeEditorPage() {
 
   const loadUserLatex = async () => {
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-      const res = await fetch(`${API_BASE}/profile/resume/source`, {
-        method: "GET",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      if (res.ok) {
-        const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          const j = await res.json();
-          if (j?.latex && typeof j.latex === "string") return j.latex;
-        } else if (ct.includes("text/plain") || ct.includes("text/latex") || ct.includes("application/x-tex")) {
-          const txt = await res.text();
-          if (txt?.trim()) return txt;
+      const res = await getResumeSourceApi();
+      const data = res?.data;
+      if (!data) throw new Error("no data");
+      if (typeof data === "string") {
+        try {
+          const j = JSON.parse(data);
+          if (j?.latex && typeof j.latex === "string" && j.latex.trim()) return j.latex;
+        } catch {
+          if (data.trim()) return data;
         }
       }
-    } catch {
-    }
+      if (typeof data === "object" && data?.latex && typeof data.latex === "string") return data.latex;
+    } catch {}
     try {
       const saved = typeof window !== "undefined" ? localStorage.getItem("resumeEditor.latex") : null;
       if (saved && saved.trim()) return saved;
@@ -72,29 +69,15 @@ export default function ResumeEditorPage() {
     return null;
   };
 
-  const compileToBlob = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/compile`, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: buildLatexForCompile(latex),
-    });
-    const ct = res.headers.get("content-type") || "";
-    if (!res.ok || !ct.includes("pdf")) {
-      const text = await res.text();
-      try {
-        const j = JSON.parse(text);
-        throw new Error(
-          (j.message || "Compile failed") + (j.log ? `\n\n${j.log}` : "")
-        );
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          // Not JSON
-          throw new Error(text || "Compile failed");
-        }
-        throw e;
+  const compileToBlob = async () => {    
+    try {
+      if (typeof compileLatexApi === "function") {
+        const res = await compileLatexApi(buildLatexForCompile(latex));
+        console.log("compileLatexApi response:", res);
+        if (res?.data) return res.data;
       }
+    } catch (_) {
     }
-    return await res.blob();
   };
 
   const buildLatexForCompile = (src) => {
@@ -181,16 +164,7 @@ ${src}
       const formData = new FormData();
       formData.append("resume", file);
       formData.append("latex", latex);
-      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        body: formData,
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Upload failed");
-      }
+      await uploadResumeApi(formData);
       window.location.href = "/profile";
     } catch (err) {
       alert(err?.message || "Upload failed. Please check your token or file.");
