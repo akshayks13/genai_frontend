@@ -264,10 +264,8 @@ export default function ProfilePage() {
   const handleGenerateResume = async () => {
     setIsProcessingResume(true);
     try {
-      // Simulate AI generation time
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      // Generate resume data based on profile
       const generatedResumeData = {
         score: 85,
         lastUpdated: new Date().toISOString(),
@@ -296,7 +294,6 @@ export default function ProfilePage() {
         },
       };
 
-      // Update backend
       const payload = {
         email: editData.email || localStorage.getItem("userEmail"),
         resume: generatedResumeData,

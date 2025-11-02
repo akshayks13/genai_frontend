@@ -46,7 +46,32 @@ export default function ResumeEditorPage() {
   const debounceRef = useRef(null);
   const lastBlobUrlRef = useRef("");
 
-  // Helper to compile current LaTeX to a PDF Blob via local API route
+  const loadUserLatex = async () => {
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      const res = await fetch(`${API_BASE}/profile/resume/source`, {
+        method: "GET",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (res.ok) {
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const j = await res.json();
+          if (j?.latex && typeof j.latex === "string") return j.latex;
+        } else if (ct.includes("text/plain") || ct.includes("text/latex") || ct.includes("application/x-tex")) {
+          const txt = await res.text();
+          if (txt?.trim()) return txt;
+        }
+      }
+    } catch {
+    }
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("resumeEditor.latex") : null;
+      if (saved && saved.trim()) return saved;
+    } catch {}
+    return null;
+  };
+
   const compileToBlob = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/compile`, {
       method: "POST",
@@ -86,7 +111,13 @@ ${src}
   };
 
   useEffect(() => {
-    const loadDefault = async () => {
+    const init = async () => {
+      // Prefer user's stored LaTeX
+      const userLatex = await loadUserLatex();
+      if (userLatex) {
+        setLatex(userLatex);
+        return;
+      }
       try {
         const res = await fetch(`/${template}`);
         const txt = res.ok ? await res.text() : DEFAULT_TEMPLATE;
@@ -95,7 +126,7 @@ ${src}
         setLatex(DEFAULT_TEMPLATE);
       }
     };
-    loadDefault();
+    init();
     return () => {
       if (lastBlobUrlRef.current) URL.revokeObjectURL(lastBlobUrlRef.current);
     };
@@ -108,6 +139,9 @@ ${src}
 
   useEffect(() => {
     if (livePreview) scheduleCompile();
+    try {
+      if (latex) localStorage.setItem("resumeEditor.latex", latex);
+    } catch {}
   }, [latex, livePreview]);
 
   const compileLatex = async () => {
@@ -146,6 +180,7 @@ ${src}
       const file = new File([blob], "resume.pdf", { type: "application/pdf" });
       const formData = new FormData();
       formData.append("resume", file);
+      formData.append("latex", latex);
       const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/resume`, {
         method: "POST",
