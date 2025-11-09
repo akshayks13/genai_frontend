@@ -12,6 +12,7 @@ Our engines are powered with premium-quality domestic and international data, re
 - **Industry Trends Dashboard**: Real-time insights on technology trends and government policies
 - **Personalized Roadmaps**: Interactive career progression with milestones and learning paths
 - **Progress Tracking**: Visual progress indicators and achievement tracking
+- **Careers & Jobs Intelligence**: AI-curated job listings with smart filters (skills, experience, work type, region, industry), dynamic fit score, salary & growth insights, interview prep assistant, and save/apply tracking.
 
 ### Design & Experience
 - **Google Material Design**: Clean, minimal, and intuitive interface
